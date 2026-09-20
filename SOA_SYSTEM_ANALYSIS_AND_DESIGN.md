@@ -37,7 +37,6 @@
    - 8.1. Cấu trúc thư mục mã nguồn Monorepo chuẩn công nghiệp
    - 8.2. Mô hình điều phối Container với Docker Compose & Database-per-Service
    - 8.3. Sơ đồ mạng vật lý và phân định cổng dịch vụ (Network Topology)
-   - 8.4. Chiến lược kiểm tra sức khỏe và khả năng phục hồi (Healthcheck & Resilience)
 
 ---
 
@@ -1008,19 +1007,6 @@ flowchart TD
     APP_DT -->|JDBC connection| DB2
     APP_DK -->|JDBC connection| DB3
 ```
-
----
-
-### 8.4. Chiến lược kiểm tra sức khỏe và khả năng phục hồi (Healthcheck & Resilience)
-
-1. **Giám sát sức khỏe định kỳ (Healthcheck via Spring Actuator):**
-   - Mỗi service tích hợp module `spring-boot-starter-actuator` cung cấp endpoint `/actuator/health`.
-   - Service Registry gửi tín hiệu thăm dò (heartbeat) định kỳ 10 giây/lần. Nếu quá 3 lần liên tiếp service không phản hồi, Service Registry tự động loại bỏ instance đó khỏi bảng định tuyến để tránh gửi request vào node lỗi.
-2. **Khởi động phụ thuộc có điều kiện (Container Dependency Order):**
-   - Trong `docker-compose.yml`, các service ứng dụng Java được cấu hình `depends_on` với điều kiện `condition: service_healthy` đối với cụm `mysql` và `service-discovery`.
-   - Đảm bảo cơ sở dữ liệu đã sẵn sàng tiếp nhận kết nối JDBC trước khi các Spring Application Context bắt đầu nạp cấu hình Hibernate/JPA.
-3. **Chiến lược phục hồi dữ liệu (Idempotency & Rollback Logic):**
-   - Nếu quá trình đăng ký tại `dangky-service` bị ngắt quãng sau khi đã cập nhật số lượng slot tại `detai-service`, hệ thống kích hoạt cơ chế Compensation Call (hoàn trả lại slot) để bảo toàn tính nhất quán dữ liệu giữa 2 dịch vụ.
 
 ---
 *Tài liệu Phân tích và Thiết kế Hệ thống hoàn chỉnh theo chuẩn Software Engineering, phục vụ định hướng triển khai mã nguồn dự án SOA.*
