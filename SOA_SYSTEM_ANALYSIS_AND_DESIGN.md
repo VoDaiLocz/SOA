@@ -13,10 +13,10 @@
    - 2.1. Danh mục Tác nhân (Actors)
    - 2.2. Biểu đồ Ca sử dụng tổng quát (Use Case Diagram)
    - 2.3. Đặc tả chi tiết từng Ca sử dụng (Use Case Specifications)
-3. [THIẾT KẾ KIẾN TRÚC HƯỚNG DỊCH VỤ (SOA DESIGN)](#3-thiết-kế-kiến-trúc-hướng-dịch-vụ-soa-design)
+3. [THIẾT KẾ KIẾN TRÚC HƯỚNG DỊCH VỤ (SOA / MICROSERVICES DESIGN)](#3-thiết-kế-kiến-trúc-hướng-dịch-vụ-soa-design)
    - 3.1. Phân rã dịch vụ và ranh giới trách nhiệm (Service Decomposition)
-   - 3.2. Sơ đồ kiến trúc dịch vụ tổng thể
-   - 3.3. Cơ chế giao tiếp liên dịch vụ qua HTTP/REST
+   - 3.2. Sơ đồ kiến trúc Microservices thực chiến (API Gateway + Service Registry)
+   - 3.3. Cơ chế giao tiếp liên dịch vụ qua Declarative OpenFeign Client
 4. [THIẾT KẾ CƠ SỞ DỮ LIỆU (DATABASE DESIGN)](#4-thiết-kế-cơ-sở-dữ-liệu-database-design)
    - 4.1. Sơ đồ thực thể liên kết (ERD)
    - 4.2. Từ điển dữ liệu chi tiết 3 bảng: SINHVIEN, DETAI, DANGKY
@@ -33,6 +33,11 @@
 7. [THIẾT KẾ TẦNG ỨNG DỤNG VÀ MÔ HÌNH DỮ LIỆU (APPLICATION ARCHITECTURE)](#7-thiết-kế-tầng-ứng-dụng-và-mô-hình-dữ-liệu-application-architecture)
    - 7.1. Kiến trúc phân lớp chuẩn mực (Layered Architecture)
    - 7.2. Đặc tả các tầng giao tiếp và đối tượng trao đổi (DTOs)
+8. [THIẾT KẾ TRIỂN KHAI VÀ MÔ HÌNH VẬN HÀNH (DEPLOYMENT ARCHITECTURE)](#8-thiết-kế-triển-khai-và-mô-hình-vận-hành-deployment-architecture)
+   - 8.1. Cấu trúc thư mục mã nguồn Monorepo chuẩn công nghiệp
+   - 8.2. Mô hình điều phối Container với Docker Compose & Database-per-Service
+   - 8.3. Sơ đồ mạng vật lý và phân định cổng dịch vụ (Network Topology)
+   - 8.4. Chiến lược kiểm tra sức khỏe và khả năng phục hồi (Healthcheck & Resilience)
 
 ---
 
@@ -264,74 +269,95 @@ flowchart LR
 
 ---
 
-## 3. THIẾT KẾ KIẾN TRÚC HƯỚNG DỊCH VỤ (SOA DESIGN)
+## 3. THIẾT KẾ KIẾN TRÚC HƯỚNG DỊCH VỤ (SOA / MICROSERVICES DESIGN)
 
 ### 3.1. Phân rã dịch vụ và ranh giới trách nhiệm
 
-Hệ thống được chia thành **3 Dịch vụ độc lập**, mỗi dịch vụ chạy trên một cổng (port) riêng biệt và có cơ sở dữ liệu riêng:
+Hệ thống được thiết kế theo mô hình **Microservices kiến trúc hiện đại**, phân tách rõ ràng giữa hạ tầng điều phối (Infrastructure Layer) và các dịch vụ nghiệp vụ (Business Services). Mỗi dịch vụ nghiệp vụ sở hữu cơ sở dữ liệu độc lập (Database-per-Service) và chạy trên một cổng riêng:
 
-| Tên Dịch Vụ | Cổng (Port) | Cơ sở dữ liệu phụ trách | Nhiệm vụ chính |
-|:---|:---|:---|:---|
-| **`sinhvien-service`** | `8081` | Bảng `SINHVIEN` | Quản lý toàn bộ thông tin sinh viên; cung cấp API thẩm định điều kiện học tập của sinh viên. |
-| **`detai-service`** | `8082` | Bảng `DETAI` | Quản lý danh mục đề tài, giảng viên hướng dẫn; kiểm soát và điều chỉnh hạn ngạch slot đề tài. |
-| **`dangky-service`** | `8083` | Bảng `DANGKY` | Tiếp nhận đăng ký, đóng vai trò **Orchestrator** gọi phối hợp sang `sinhvien-service` và `detai-service` qua HTTP/REST. |
+| Phân Loại | Tên Dịch Vụ | Cổng (Port) | Cơ sở dữ liệu phụ trách | Nhiệm vụ kiến trúc & nghiệp vụ |
+|:---|:---|:---|:---|:---|
+| **Hạ tầng** | **`api-gateway`** | `8080` | *(Không lưu DB)* | Điểm tiếp nhận request tập trung (Single Entry Point), định tuyến động (Dynamic Routing) đến các service, lọc bảo mật và cân bằng tải. |
+| **Hạ tầng** | **`service-registry`** | `8500` / `8761` | In-Memory Registry | Trung tâm đăng ký và tự động phát hiện dịch vụ (Consul / Netflix Eureka). Cho phép các service giao tiếp qua tên miền ảo. |
+| **Nghiệp vụ** | **`sinhvien-service`** | `8081` | Bảng `SINHVIEN` (`sinhvien_db`) | Quản lý thông tin hồ sơ sinh viên; cung cấp API thẩm định điều kiện học tập của sinh viên. |
+| **Nghiệp vụ** | **`detai-service`** | `8082` | Bảng `DETAI` (`detai_db`) | Quản lý danh mục đề tài, giảng viên hướng dẫn; kiểm soát và điều chỉnh hạn ngạch slot đề tài (tối đa 3). |
+| **Nghiệp vụ** | **`dangky-service`** | `8083` | Bảng `DANGKY` (`dangky_db`) | Tiếp nhận đăng ký, đóng vai trò **Orchestrator** gọi phối hợp sang `sinhvien-service` và `detai-service` qua OpenFeign. |
 
 ---
 
-### 3.2. Sơ đồ kiến trúc dịch vụ tổng thể
+### 3.2. Sơ đồ kiến trúc Microservices thực chiến
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer ["Tầng Giao Diện & Kiểm Thử"]
+    subgraph ClientLayer ["1. Tầng Client & Kiểm Thử"]
         ClientApp["Postman Collection / Swagger UI / Web Frontend"]
     end
 
-    subgraph SOAServices ["Tầng Dịch Vụ SOA (Các Service Độc Lập)"]
-        subgraph S1 ["1. SinhVien-Service (Port 8081)"]
+    subgraph InfrastructureLayer ["2. Tầng Hạ Tầng & Điều Phối (Infrastructure)"]
+        Gateway["API Gateway (Spring Cloud Gateway - Port 8080)"]
+        Registry["Service Discovery (Consul / Eureka Registry)"]
+    end
+
+    subgraph BusinessLayer ["3. Tầng Dịch Vụ Nghiệp Vụ (Business Microservices)"]
+        subgraph S1 ["SinhVien-Service (Port 8081)"]
             S1_API["SinhVienController"]
             S1_Logic["SinhVienService"]
             S1_Data["SinhVienRepository"]
-            DB_SV[("CSDL SINHVIEN")]
+            DB_SV[("CSDL sinhvien_db\n(Bảng SINHVIEN)")]
             S1_API --> S1_Logic --> S1_Data --> DB_SV
         end
 
-        subgraph S2 ["2. DeTai-Service (Port 8082)"]
+        subgraph S2 ["DeTai-Service (Port 8082)"]
             S2_API["DeTaiController"]
             S2_Logic["DeTaiService"]
             S2_Data["DeTaiRepository"]
-            DB_DT[("CSDL DETAI")]
+            DB_DT[("CSDL detai_db\n(Bảng DETAI)")]
             S2_API --> S2_Logic --> S2_Data --> DB_DT
         end
 
-        subgraph S3 ["3. DangKy-Service (Port 8083 - Điều Phối)"]
+        subgraph S3 ["DangKy-Service (Port 8083 - Orchestrator)"]
             S3_API["DangKyController"]
-            S3_Logic["DangKyService (Orchestrator)"]
+            S3_Logic["DangKyService (Điều Phối Nghiệp Vụ)"]
             S3_Data["DangKyRepository"]
-            DB_DK[("CSDL DANGKY")]
-            S3_SVClient["SinhVienRestClient"]
-            S3_DTClient["DeTaiRestClient"]
+            DB_DK[("CSDL dangky_db\n(Bảng DANGKY)")]
+            
+            S3_SVFeign["SinhVienFeignClient\n(@FeignClient)"]
+            S3_DTFeign["DeTaiFeignClient\n(@FeignClient)"]
 
             S3_API --> S3_Logic
             S3_Logic --> S3_Data --> DB_DK
-            S3_Logic --> S3_SVClient
-            S3_Logic --> S3_DTClient
+            S3_Logic --> S3_SVFeign
+            S3_Logic --> S3_DTFeign
         end
     end
 
-    ClientApp -->|HTTP REST| S1_API
-    ClientApp -->|HTTP REST| S2_API
-    ClientApp -->|HTTP REST| S3_API
+    %% Luồng định tuyến từ Client qua Gateway
+    ClientApp -->|HTTP REST: Chỉ gọi qua Port 8080| Gateway
+    Gateway -.->|Tra cứu địa chỉ động theo Service ID| Registry
 
-    S3_SVClient -.->|HTTP GET: Thẩm định sinh viên| S1_API
-    S3_DTClient -.->|HTTP GET & PATCH: Thẩm định & Cập nhật slot| S2_API
+    Gateway -->|Định tuyến /api/sinhvien/**| S1_API
+    Gateway -->|Định tuyến /api/detai/**| S2_API
+    Gateway -->|Định tuyến /api/dangky/**| S3_API
+
+    %% Service Registry Heartbeat
+    S1_API -.->|Tự đăng ký & gửi Heartbeat| Registry
+    S2_API -.->|Tự đăng ký & gửi Heartbeat| Registry
+    S3_API -.->|Tự đăng ký & gửi Heartbeat| Registry
+
+    %% Giao tiếp liên dịch vụ qua OpenFeign
+    S3_SVFeign ==>|HTTP GET /api/sinhvien/{maSv}/eligibility| S1_API
+    S3_DTFeign ==>|HTTP GET & PATCH /api/detai/{maDeTai}/...| S2_API
 ```
 
 ---
 
-### 3.3. Cơ chế giao tiếp liên dịch vụ qua HTTP/REST
-* **Độc lập dữ liệu (Database Autonomy):** Các service không kết nối chéo CSDL của nhau. Mọi nhu cầu truy xuất hay thay đổi dữ liệu bên ngoài phạm vi của mình đều phải đi qua các API công khai.
-* **Giao thức truyền thông:** Giao thức chuẩn **HTTP/1.1 REST**, dữ liệu định dạng **JSON UTF-8**.
-* **Xử lý lỗi liên dịch vụ:** Khi một dịch vụ phụ thuộc phản hồi lỗi nghiệp vụ (ví dụ: đề tài hết chỗ), `dangky-service` bắt mã lỗi HTTP tương ứng và chuyển tiếp thông điệp lỗi rõ ràng về cho phía Client.
+### 3.3. Cơ chế giao tiếp liên dịch vụ qua Declarative OpenFeign Client
+* **Mô hình Khai báo (Declarative REST Client):** `dangky-service` sử dụng **Spring Cloud OpenFeign** thay cho các lời gọi HTTP thủ công (`RestTemplate`/`WebClient`). Client chỉ cần khai báo interface với các annotation `@FeignClient(name = "sinhvien-service")` và `@FeignClient(name = "detai-service")`, Spring Cloud sẽ tự động sinh mã proxy và ánh xạ DTO.
+* **Cân bằng tải phía Client (Client-Side Load Balancing):** Kết hợp với Spring Cloud LoadBalancer để tự động chọn instance đang khả dụng từ Service Registry.
+* **Độc lập dữ liệu tuyệt đối (Database Autonomy):** Không có kết nối chéo giữa các cơ sở dữ liệu. Mọi tương tác lấy dữ liệu của sinh viên hay đề tài đều thực hiện qua contract API công khai.
+* **Khả năng chống chịu lỗi (Resilience & Timeout):**
+  - Cấu hình Timeout nghiêm ngặt: Connection Timeout = 3000ms, Read Timeout = 5000ms.
+  - Phục hồi sự cố (Fault Tolerance): Khi dịch vụ `sinhvien-service` hoặc `detai-service` gặp sự cố không phản hồi, `dangky-service` trả về lỗi HTTP 503 (Service Unavailable) hoặc thông báo lỗi tường minh, không làm treo toàn bộ luồng đăng ký.
 
 ---
 
@@ -871,4 +897,131 @@ Nhằm đảm bảo tính độc lập và bảo mật, các dịch vụ không 
    - `ghiChu` (String, Tùy chọn): Ghi chú từ sinh viên.
 
 ---
+
+## 8. THIẾT KẾ TRIỂN KHAI VÀ MÔ HÌNH VẬN HÀNH (DEPLOYMENT ARCHITECTURE)
+
+### 8.1. Cấu trúc thư mục mã nguồn Monorepo chuẩn công nghiệp
+
+Để tối ưu hóa quy trình phát triển, kiểm thử và nộp bài, dự án áp dụng mô hình **Monorepo** quản lý thống nhất tất cả các dịch vụ độc lập trong cùng một kho mã nguồn duy nhất:
+
+```text
+SOA/
+├── docker-compose.yml              # Kịch bản điều phối toàn bộ hạ tầng và các service
+├── init.sql                        # Script khởi tạo 3 cơ sở dữ liệu và phân quyền user
+├── .env.example                    # Biến môi trường mẫu cho hạ tầng và bảo mật
+├── README.md                       # Hướng dẫn khởi chạy và vận hành
+├── SOA_SYSTEM_ANALYSIS_AND_DESIGN.md # Tài liệu PTTKHT chuẩn mực
+├── postman/                        # Bộ sưu tập Postman Collection kiểm thử tự động
+│   └── SOA_HelloWorld.postman_collection.json
+├── api-gateway/                    # Dịch vụ Cổng tiếp nhận (Spring Cloud Gateway - Port 8080)
+│   ├── Dockerfile
+│   ├── pom.xml
+│   └── src/
+├── sinhvien-service/               # Dịch vụ Quản lý Sinh viên (Port 8081)
+│   ├── Dockerfile
+│   ├── pom.xml
+│   └── src/
+├── detai-service/                  # Dịch vụ Quản lý Đề tài (Port 8082)
+│   ├── Dockerfile
+│   ├── pom.xml
+│   └── src/
+└── dangky-service/                 # Dịch vụ Đăng ký Đồ án - Orchestrator (Port 8083)
+    ├── Dockerfile
+    ├── pom.xml
+    └── src/
+```
+
+---
+
+### 8.2. Mô hình điều phối Container với Docker Compose & Database-per-Service
+
+Hệ thống được đóng gói hoàn chỉnh bằng **Docker Compose**, cho phép thiết lập và khởi động toàn bộ môi trường phân tán chỉ bằng một câu lệnh:
+
+1. **Cơ sở dữ liệu độc lập (Database-per-Service Pattern):**
+   - Cụm CSDL sử dụng **MySQL 8.0** chạy trên cổng nội bộ `3306`.
+   - File `init.sql` tự động tạo 3 cơ sở dữ liệu riêng biệt:
+     - `sinhvien_db`: Dành riêng cho `sinhvien-service`.
+     - `detai_db`: Dành riêng cho `detai-service`.
+     - `dangky_db`: Dành riêng cho `dangky-service`.
+   - Cấp tài khoản truy cập và quyền hạn riêng biệt cho từng service, triệt tiêu hoàn toàn rủi ro truy cập chéo dữ liệu tại tầng vật lý.
+
+2. **Trung tâm Service Discovery:**
+   - Sử dụng **HashiCorp Consul** (Port `8500`) hoặc **Spring Cloud Netflix Eureka** (Port `8761`).
+   - Cung cấp giao diện Web UI theo dõi trạng thái sống còn (Liveness/Readiness) của từng dịch vụ.
+
+3. **Cổng tiếp nhận tập trung (API Gateway):**
+   - Tiếp nhận toàn bộ lưu lượng tại cổng duy nhất `8080`.
+   - Định tuyến động dựa trên Service ID đã đăng ký trong Service Discovery.
+
+---
+
+### 8.3. Sơ đồ mạng vật lý và phân định cổng dịch vụ (Network Topology)
+
+```mermaid
+flowchart TD
+    subgraph HostNetwork ["Mạng Bên Ngoài (Host / Client Network)"]
+        UserBrowser["Trình duyệt / Postman"]
+        DevOps["Quản trị viên hệ thống"]
+    end
+
+    subgraph DockerBridge ["Mạng Nội Bộ Container (Docker Bridge: soa-network)"]
+        subgraph GatewayContainer ["api-gateway"]
+            GW["Spring Cloud Gateway\nHost: 8080 -> Container: 8080"]
+        end
+
+        subgraph RegistryContainer ["service-discovery"]
+            REG["Consul / Eureka Server\nHost: 8500 -> Container: 8500"]
+        end
+
+        subgraph MySQLContainer ["mysql-cluster"]
+            MYSQL["MySQL 8.0\nHost: 3306 -> Container: 3306"]
+            DB1[("sinhvien_db")]
+            DB2[("detai_db")]
+            DB3[("dangky_db")]
+            MYSQL --- DB1
+            MYSQL --- DB2
+            MYSQL --- DB3
+        end
+
+        subgraph AppContainers ["Cụm Dịch Vụ Nghiệp Vụ (Microservices)"]
+            APP_SV["sinhvien-service\nContainer Port: 8081"]
+            APP_DT["detai-service\nContainer Port: 8082"]
+            APP_DK["dangky-service\nContainer Port: 8083"]
+        end
+    end
+
+    UserBrowser -->|Truy cập API duy nhất| GW
+    DevOps -->|Theo dõi trạng thái dịch vụ| REG
+
+    GW -->|Định tuyến nội bộ| APP_SV
+    GW -->|Định tuyến nội bộ| APP_DT
+    GW -->|Định tuyến nội bộ| APP_DK
+
+    APP_SV -.->|Đăng ký trạng thái| REG
+    APP_DT -.->|Đăng ký trạng thái| REG
+    APP_DK -.->|Đăng ký trạng thái| REG
+
+    APP_DK ==>|OpenFeign Client nội bộ| APP_SV
+    APP_DK ==>|OpenFeign Client nội bộ| APP_DT
+
+    APP_SV -->|JDBC connection| DB1
+    APP_DT -->|JDBC connection| DB2
+    APP_DK -->|JDBC connection| DB3
+```
+
+---
+
+### 8.4. Chiến lược kiểm tra sức khỏe và khả năng phục hồi (Healthcheck & Resilience)
+
+1. **Giám sát sức khỏe định kỳ (Healthcheck via Spring Actuator):**
+   - Mỗi service tích hợp module `spring-boot-starter-actuator` cung cấp endpoint `/actuator/health`.
+   - Service Registry gửi tín hiệu thăm dò (heartbeat) định kỳ 10 giây/lần. Nếu quá 3 lần liên tiếp service không phản hồi, Service Registry tự động loại bỏ instance đó khỏi bảng định tuyến để tránh gửi request vào node lỗi.
+2. **Khởi động phụ thuộc có điều kiện (Container Dependency Order):**
+   - Trong `docker-compose.yml`, các service ứng dụng Java được cấu hình `depends_on` với điều kiện `condition: service_healthy` đối với cụm `mysql` và `service-discovery`.
+   - Đảm bảo cơ sở dữ liệu đã sẵn sàng tiếp nhận kết nối JDBC trước khi các Spring Application Context bắt đầu nạp cấu hình Hibernate/JPA.
+3. **Chiến lược phục hồi dữ liệu (Idempotency & Rollback Logic):**
+   - Nếu quá trình đăng ký tại `dangky-service` bị ngắt quãng sau khi đã cập nhật số lượng slot tại `detai-service`, hệ thống kích hoạt cơ chế Compensation Call (hoàn trả lại slot) để bảo toàn tính nhất quán dữ liệu giữa 2 dịch vụ.
+
+---
 *Tài liệu Phân tích và Thiết kế Hệ thống hoàn chỉnh theo chuẩn Software Engineering, phục vụ định hướng triển khai mã nguồn dự án SOA.*
+
