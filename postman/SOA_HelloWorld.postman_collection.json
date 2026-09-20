@@ -1,0 +1,76 @@
+{
+  "info": {
+    "_postman_id": "7f8b9a1c-2d3e-4f5a-6b7c-8d9e0f1a2b3c",
+    "name": "SOA_HelloWorld",
+    "description": "Postman collection kiểm thử ví dụ đầu tiên Hello World theo yêu cầu Bài thực hành số 1 môn SOA",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Hello World Root",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            ""
+          ]
+        },
+        "description": "Gọi GET / trả về Hello World"
+      },
+      "response": []
+    },
+    {
+      "name": "Hello World Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/hello",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "hello"
+          ]
+        },
+        "description": "Gọi GET /hello trả về Hello World"
+      },
+      "response": []
+    },
+    {
+      "name": "Hello With Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/hello?name=VoDaiLoc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "hello"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "VoDaiLoc"
+            }
+          ]
+        },
+        "description": "Gọi GET /hello?name=VoDaiLoc trả về Hello VoDaiLoc"
+      },
+      "response": []
+    }
+  ]
+}
