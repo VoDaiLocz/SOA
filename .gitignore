@@ -18,3 +18,7 @@ release.properties
 *.log
 *.tmp
 .DS_Store
+
+# Local documentation (kept locally, excluded from remote)
+README.md
+SOA_SYSTEM_ANALYSIS_AND_DESIGN.md
