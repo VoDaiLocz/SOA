@@ -39,10 +39,10 @@ SOA/
 │   ├── api-gateway/          # Port 8080 - Cổng định tuyến API, xử lý CORS
 │   ├── auth-service/         # Port 8084 - Đăng nhập, cấp và kiểm tra JWT
 │   ├── user-service/         # Port 8081 - Quản lý Sinh viên, Giảng viên, Khoa, Lớp
-│   ├── detai-service/        # Port 8082 - Quản lý và đăng ký đề tài (dùng Spring Cache)
+│   ├── detai-service/        # Port 8082 - Quản lý và đăng ký đề tài (có Cache)
 │   ├── council-service/      # Port 8083 - Quản lý Hội đồng bảo vệ, phân công đề tài
 │   ├── grading-service/      # Port 8085 - Quản lý điểm, tính ĐTB, xếp loại
-│   ├── analytics-service/    # Port 8086 - Thống kê số liệu, xuất file CSV (dùng Spring Cache)
+│   ├── analytics-service/    # Port 8086 - Thống kê số liệu, xuất file CSV (có Cache)
 │   ├── notification-service/ # Port 8087 - Gửi và quản lý thông báo
 │   ├── storage-service/      # Port 8088 - Upload và tải file tài liệu, đồ án
 │   └── pom.xml               # Parent POM quản lý dependency tập trung
@@ -68,50 +68,24 @@ SOA/
 Tất cả service viết bằng **Java thuần (không dùng Lombok)**, cấu trúc chuẩn:  
 `Controller -> service/interfaces/I<Name>Service -> service/<Name>Service (bỏ chữ Impl) -> Repository -> DTO -> ApiResponse<T>`.
 
-| Service | Port | Database | Kỹ Thuật Chính | Chức Năng Chính |
-| :--- | :---: | :--- | :--- | :--- |
-| **api-gateway** | 8080 | — | Spring Cloud Gateway WebFlux | Điểm tiếp nhận duy nhất, định tuyến request, xử lý CORS |
-| **auth-service** | 8084 | auth_db | Spring Security, JJWT, BCrypt | Đăng nhập, sinh token JWT, mã hóa mật khẩu |
-| **user-service** | 8081 | user_db | Spring Data JPA, MySQL | Quản lý sinh viên, giảng viên, khoa, lớp |
-| **detai-service** | 8082 | detai_db | Spring Cache, OpenFeign | Đăng ký đề tài, duyệt đề tài, cache danh sách |
-| **council-service** | 8083 | council_db | Spring Data JPA, MySQL | Lập hội đồng bảo vệ, phân công đề tài cho hội đồng |
-| **grading-service** | 8085 | grading_db | Spring Data JPA, MySQL | Nhập điểm, tính điểm trung bình, xếp loại |
-| **analytics-service** | 8086 | analytics_db | Spring Cache, CSV Export | Thống kê số lượng đề tài, tỷ lệ đạt, xuất CSV |
-| **notification-service** | 8087 | notification_db | Spring Data JPA, MySQL | Gửi thông báo phê duyệt, nhắc hạn |
-| **storage-service** | 8088 | storage_db | Multipart File, Streams | Upload và download file đồ án (.pdf, .docx, .zip) |
+| Service | Port | Database | Chức Năng Chính |
+| :--- | :---: | :--- | :--- |
+| **api-gateway** | 8080 | — | Cổng định tuyến API tập trung, xử lý CORS |
+| **auth-service** | 8084 | auth_db | Đăng nhập, cấp và xác thực token JWT, mã hóa mật khẩu BCrypt |
+| **user-service** | 8081 | user_db | Quản lý sinh viên, giảng viên, khoa, lớp |
+| **detai-service** | 8082 | detai_db | Quản lý đề tài, sinh viên đăng ký đề tài (có Cache) |
+| **council-service** | 8083 | council_db | Lập hội đồng bảo vệ, phân công đề tài cho hội đồng |
+| **grading-service** | 8085 | grading_db | Nhập điểm, tính điểm trung bình, xếp loại |
+| **analytics-service** | 8086 | analytics_db | Thống kê số lượng đề tài, tỷ lệ đạt, xuất CSV (có Cache) |
+| **notification-service** | 8087 | notification_db | Gửi thông báo phê duyệt, nhắc hạn |
+| **storage-service** | 8088 | storage_db | Upload và tải file tài liệu đồ án (.pdf, .docx, .zip) |
 
 ---
 
-## 4. Kỹ Thuật Nổi Bật Ở Backend
-
-### 4.1. Spring Cache
-* **Kích hoạt:** `@EnableCaching` tại file cấu hình/main.
-* **Tại `detai-service`:**
-  * `@Cacheable(value = "danhSachDeTai", key = "'all'")`: Lưu danh sách đề tài vào RAM sau lần query đầu tiên, các lần sau lấy trực tiếp từ RAM không cần truy vấn DB.
-  * `@CacheEvict(value = "danhSachDeTai", allEntries = true)`: Tự động xóa cache khi tạo mới, cập nhật hoặc xóa đề tài để dữ liệu luôn chính xác.
-* **Tại `analytics-service`:** Dùng `@Cacheable("thongKeDeTai")` để cache dữ liệu báo cáo thống kê.
-
-### 4.2. Giao Tiếp Giữa Các Service (OpenFeign)
-* `detai-service` dùng `@FeignClient` gọi `user-service` qua REST API để kiểm tra mã sinh viên trước khi cho phép đăng ký đề tài:
-  ```java
-  @FeignClient(name = "user-service", url = "${application.services.user-service.url:http://localhost:8081}")
-  public interface UserClient {
-      @GetMapping("/api/v1/sinh-vien/{id}")
-      ApiResponse<SinhVienDto> getSinhVienById(@PathVariable("id") Long id);
-  }
-  ```
-
-### 4.3. Xác Thực & Phân Quyền (JWT)
-* Đăng nhập qua `auth-service`, mật khẩu băm bằng BCrypt.
-* Cấp token JWT (HMAC-SHA256) chứa `username` và vai trò (`SINH_VIEN`, `GIANG_VIEN`, `ADMIN`), hết hạn sau 24h.
-* Client gửi kèm token qua Header: `Authorization: Bearer <token>`.
-
----
-
-## 5. Kiến Trúc Frontend (Angular 17 Standalone)
+## 4. Cấu Trúc Frontend (Angular 17 Standalone)
 
 Xây dựng theo chuẩn Angular 17 không dùng `NgModule`:
-* **Standalone Component:** Toàn bộ component đều có `standalone: true`.
+* **Standalone Component:** Toàn bộ component đều dùng `standalone: true`.
 * **Khởi động (`main.ts`):** Dùng `bootstrapApplication(AppComponent, { providers: [ provideHttpClient(withInterceptors([authInterceptor])), provideRouter(routes) ] })`.
 * **Cấu trúc thư mục:**
   * `core/`: Chứa `auth.interceptor.ts` (tự động gắn token vào header request và chuyển về `/login` nếu nhận mã 401), guards, services dùng chung toàn app.
@@ -121,26 +95,26 @@ Xây dựng theo chuẩn Angular 17 không dùng `NgModule`:
 
 ---
 
-## 6. Hướng Dẫn Chạy Dự Án
+## 5. Hướng Dẫn Chạy Dự Án
 
 ### Yêu Cầu Môi Trường:
 * Docker & Docker Compose (hoặc JDK 21 + Maven cho Backend, Node.js 18+ cho Frontend).
 
-### 6.1. Chạy Backend bằng Docker Compose
+### 5.1. Chạy Backend bằng Docker Compose
 ```bash
 cd /home/vodailoc/SOA
 docker compose up -d --build
 ```
 Kiểm tra trạng thái: `docker compose ps`. Gateway chạy tại `http://localhost:8080`.
 
-### 6.2. Chạy Backend thủ công (Maven)
+### 5.2. Chạy Backend thủ công (Maven)
 ```bash
 mvn clean test-compile -DskipTests
 # Chạy từng service:
 cd backend/api-gateway && mvn spring-boot:run
 ```
 
-### 6.3. Chạy Frontend (Angular)
+### 5.3. Chạy Frontend (Angular)
 ```bash
 cd /home/vodailoc/SOA/frontend
 npm install
@@ -150,7 +124,7 @@ Truy cập: `http://localhost:4200`.
 
 ---
 
-## 7. Các API Endpoints Chính (Qua Gateway :8080)
+## 6. Các API Endpoints Chính (Qua Gateway :8080)
 
 | Chức Năng | Method | Endpoint | Service Xử Lý |
 | :--- | :---: | :--- | :---: |
