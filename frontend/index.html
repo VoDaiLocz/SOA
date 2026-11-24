@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Đồ Án - Kiến Trúc SOA</title>
+    <!-- Tailwind CSS qua CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- HEADER TRẮNG - XANH DƯƠNG -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 leading-tight">HỆ THỐNG QUẢN LÝ ĐỒ ÁN TỐT NGHIỆP</h1>
+                    <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Kiến Trúc Hướng Dịch Vụ (SOA)</p>
+                </div>
+            </div>
+
+            <!-- THANH MENU 3 TABS -->
+            <nav class="flex space-x-8 -mb-px">
+                <button onclick="switchTab('sinhvien')" id="tab-sinhvien" class="tab-btn py-3 px-1 border-b-2 font-medium text-sm border-blue-600 text-blue-600 flex items-center space-x-2">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <span>Sinh Viên</span>
+                </button>
+                <button onclick="switchTab('detai')" id="tab-detai" class="tab-btn py-3 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center space-x-2">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span>Đề Tài</span>
+                </button>
+                <button onclick="switchTab('dangky')" id="tab-dangky" class="tab-btn py-3 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center space-x-2">
+                    <i class="fa-solid fa-file-signature"></i>
+                    <span>Đăng Ký Đồ Án</span>
+                </button>
+                <button onclick="switchTab('dangnhap')" id="tab-dangnhap" class="tab-btn py-3 px-1 border-b-2 font-medium text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center space-x-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Đăng Nhập</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+        <!-- THÔNG BÁO TOAST -->
+        <div id="toast" class="hidden mb-6 p-4 rounded-xl border flex items-center justify-between shadow-sm transition-all">
+            <div class="flex items-center space-x-3">
+                <i id="toastIcon" class="text-xl"></i>
+                <div>
+                    <h4 id="toastTitle" class="font-semibold text-sm"></h4>
+                    <p id="toastMsg" class="text-xs"></p>
+                </div>
+            </div>
+            <button onclick="hideToast()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- ================= TAB 1: SINH VIÊN ================= -->
+        <div id="pane-sinhvien" class="tab-pane space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Danh Sách Sinh Viên</h2>
+                    <p class="text-sm text-slate-500">Quản lý danh sách và hồ sơ sinh viên trong hệ thống</p>
+                </div>
+                <button onclick="loadSinhVien()" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg text-sm text-slate-700 shadow-sm flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Tải lại</span>
+                </button>
+            </div>
+
+            <!-- BẢNG SINH VIÊN -->
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mã SV</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Họ và Tên</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Chuyên Ngành</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">GPA</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Trạng Thái</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sinhVienTableBody" class="bg-white divide-y divide-slate-100 text-sm">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-400">Đang tải danh sách sinh viên...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FORM THÊM SINH VIÊN -->
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-base font-semibold text-slate-800 mb-3 flex items-center space-x-2">
+                    <i class="fa-solid fa-user-plus text-blue-600"></i>
+                    <span>Thêm Sinh Viên Mới</span>
+                </h3>
+                <form id="formSinhVien" onsubmit="createSinhVien(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Mã Sinh Viên</label>
+                        <input type="text" id="sv_maSv" required placeholder="VD: SV004" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Họ và Tên</label>
+                        <input type="text" id="sv_hoTen" required placeholder="VD: Nguyễn Văn A" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Chuyên Ngành</label>
+                        <input type="text" id="sv_chuyenNganh" value="Kỹ thuật phần mềm" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">GPA</label>
+                        <input type="number" step="0.1" id="sv_gpa" value="3.5" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="md:col-span-4 flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow-sm transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Lưu Sinh Viên
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: ĐỀ TÀI ================= -->
+        <div id="pane-detai" class="tab-pane hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Danh Mục Đề Tài Tốt Nghiệp</h2>
+                    <p class="text-sm text-slate-500">Danh sách các đề tài nghiên cứu tốt nghiệp</p>
+                </div>
+                <button onclick="loadDeTai()" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg text-sm text-slate-700 shadow-sm flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Tải lại</span>
+                </button>
+            </div>
+
+            <!-- BẢNG ĐỀ TÀI -->
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mã Đề Tài</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Tên Đề Tài</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Giảng Viên Hướng Dẫn</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mô Tả</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Slot</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deTaiTableBody" class="bg-white divide-y divide-slate-100 text-sm">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-400">Đang tải danh sách đề tài...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FORM THÊM ĐỀ TÀI -->
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="text-base font-semibold text-slate-800 mb-3 flex items-center space-x-2">
+                    <i class="fa-solid fa-folder-plus text-blue-600"></i>
+                    <span>Thêm Đề Tài Mới</span>
+                </h3>
+                <form id="formDeTai" onsubmit="createDeTai(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Mã Đề Tài</label>
+                        <input type="text" id="dt_maDeTai" required placeholder="VD: DT004" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Tên Đề Tài</label>
+                        <input type="text" id="dt_tenDeTai" required placeholder="VD: Ứng dụng AI phân tích dữ liệu" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Giảng Viên Hướng Dẫn</label>
+                        <input type="text" id="dt_gvhd" required placeholder="VD: TS. Nguyễn Văn B" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Số Lượng Tối Đa</label>
+                        <input type="number" id="dt_soLuongToiDa" min="1" value="1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Mô Tả Chi Tiết</label>
+                        <input type="text" id="dt_moTa" placeholder="Mô tả tóm tắt nội dung đề tài..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="md:col-span-3 flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow-sm transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Lưu Đề Tài
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: ĐĂNG KÝ ĐỒ ÁN (ĐIỀU PHỐI DỊCH VỤ) ================= -->
+        <div id="pane-dangky" class="tab-pane hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Đăng Ký Đồ Án Tốt Nghiệp</h2>
+                    <p class="text-sm text-slate-500">Thực hiện đăng ký và theo dõi danh sách đăng ký đề tài</p>
+                </div>
+                <button onclick="loadDangKy()" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg text-sm text-slate-700 shadow-sm flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>Tải lại</span>
+                </button>
+            </div>
+
+            <!-- FORM ĐĂNG KÝ NỔI BẬT -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="text-lg font-bold text-blue-900 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-signature text-blue-600"></i>
+                    <span>Thực Hiện Đăng Ký Đề Tài Mới</span>
+                </h3>
+
+                <form id="formDangKy" onsubmit="handleDangKy(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mã Sinh Viên</label>
+                        <input type="text" id="dk_maSv" required placeholder="VD: SV001" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mã Đề Tài</label>
+                        <input type="text" id="dk_maDeTai" required placeholder="VD: DT001" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi Chú Đăng Ký</label>
+                        <input type="text" id="dk_ghiChu" placeholder="Đợt đăng ký tốt nghiệp HK1" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="md:col-span-3 flex justify-end">
+                        <button type="submit" id="btnSubmitDangKy" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md transition flex items-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Xác Nhận Đăng Ký Đồ Án</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- BẢNG LỊCH SỬ ĐÃ ĐĂNG KÝ -->
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h4 class="font-semibold text-sm text-slate-700">Danh Sách Đề Tài Đã Đăng Ký Thành Công</h4>
+                </div>
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mã Sinh Viên</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mã Đề Tài</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày Đăng Ký</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Ghi Chú</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dangKyTableBody" class="bg-white divide-y divide-slate-100 text-sm">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-400">Đang tải lịch sử đăng ký...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: ĐĂNG NHẬP ================= -->
+        <div id="pane-dangnhap" class="tab-pane hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Đăng Nhập Hệ Thống</h2>
+                    <p class="text-sm text-slate-500">Đăng nhập để thực hiện các thao tác Sửa / Xóa / Đăng ký</p>
+                </div>
+            </div>
+
+            <!-- FORM ĐĂNG NHẬP -->
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm max-w-md">
+                <h3 class="text-base font-semibold text-slate-800 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-blue-600"></i>
+                    <span>Xác Thực JWT</span>
+                </h3>
+
+                <form id="formDangNhap" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Tên Đăng Nhập</label>
+                        <input type="text" id="login_tenDangNhap" required placeholder="VD: admin" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Mật Khẩu</label>
+                        <input type="password" id="login_matKhau" required placeholder="VD: admin123" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="flex justify-between items-center pt-2">
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow-sm transition">
+                            <i class="fa-solid fa-right-to-bracket mr-1"></i> Đăng Nhập
+                        </button>
+                        <button type="button" onclick="handleLogout()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg text-sm transition">
+                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng Xuất
+                        </button>
+                    </div>
+                </form>
+
+                <!-- HIỂN THỊ TRẠNG THÁI -->
+                <div id="authStatus" class="mt-4 p-3 rounded-lg text-xs bg-slate-50 border border-slate-200 text-slate-500">
+                    Chưa đăng nhập.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- HỘP LOG MẠNG SOA (TERMINAL LỊCH SỬ GỌI GATEWAY) -->
+    <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 p-4">
+        <div class="max-w-7xl mx-auto text-xs space-y-2">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-terminal text-blue-400"></i>
+                    <span class="font-bold text-white uppercase tracking-wider">SOA Network Inspector (Lịch sử gọi API Gateway 8080)</span>
+                </div>
+                <div class="flex items-center space-x-4 text-slate-400 text-xs">
+                    <span>Mạng: <strong class="text-emerald-400">soa-network</strong></span>
+                    <span>Cổng tiếp nhận: <strong class="text-blue-400">Port 8080</strong></span>
+                    <button onclick="clearLogs()" class="hover:text-white transition"><i class="fa-solid fa-trash-can mr-1"></i>Xóa log</button>
+                </div>
+            </div>
+            <!-- DANH SÁCH LOG CUỘN ĐƯỢC -->
+            <div id="logsContainer" class="space-y-1 font-mono text-xs max-h-24 overflow-y-auto pr-2">
+                <div class="text-slate-500 py-0.5">Sẵn sàng nhận lệnh qua API Gateway...</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT KẾT NỐI API GATEWAY -->
+    <script>
+        // CẤU HÌNH DUY NHẤT: TRỎ VÀO API GATEWAY
+        const GATEWAY_BASE_URL = "http://localhost:8080/api/v1";
+
+        let editingMaSv = null;
+
+        let editingMaDeTai = null;
+
+        let jwt = null;
+
+        // Mảng lưu lịch sử log
+        const logsHistory = [];
+
+        //
+        function authHeaders(extra = {}) {
+            return { 'Content-Type': 'application/json',
+                ...(jwt ? { 'Authorization': `Bearer ${jwt}` } : {}), ...extra };
+        }
+
+        // Ghi log hoạt động ở chân trang (Hiển thị đầy đủ GET, POST, DELETE)
+        function logAction(method, endpoint, status, message) {
+            const time = new Date().toLocaleTimeString();
+            let methodBadge = '';
+            if (method === 'GET') {
+                methodBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-900 text-blue-300">GET</span>';
+            } else if (method === 'POST') {
+                methodBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-900 text-amber-300">POST</span>';
+            } else if (method === 'DELETE') {
+                methodBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-900 text-red-300">DELETE</span>';
+            } else {
+                methodBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">${method}</span>`;
+            }
+
+            const statusClass = (status >= 200 && status < 300) ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold';
+
+            const logItem = `
+                <div class="flex items-center space-x-2 py-0.5 border-b border-slate-800/40 text-[11px]">
+                    <span class="text-slate-500">[${time}]</span>
+                    ${methodBadge}
+                    <span class="text-slate-200 font-semibold">${endpoint}</span>
+                    <span class="text-slate-600">➔</span>
+                    <span class="${statusClass}">HTTP ${status}</span>
+                    <span class="text-slate-400 truncate">- ${message}</span>
+                </div>
+            `;
+
+            logsHistory.unshift(logItem); // Đưa log mới nhất lên đầu
+            if (logsHistory.length > 20) logsHistory.pop(); // Giữ tối đa 20 dòng gần nhất
+
+            document.getElementById("logsContainer").innerHTML = logsHistory.join('');
+        }
+
+        function clearLogs() {
+            logsHistory.length = 0;
+            document.getElementById("logsContainer").innerHTML = '<div class="text-slate-500 py-0.5">Đã xóa log. Sẵn sàng nhận lệnh mới...</div>';
+        }
+
+        // Chuyển Tab
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-600', 'text-blue-600');
+                el.classList.add('border-transparent', 'text-slate-500');
+            });
+
+            document.getElementById(`pane-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('border-transparent', 'text-slate-500');
+            activeBtn.classList.add('border-blue-600', 'text-blue-600');
+
+            if (tabId === 'sinhvien') loadSinhVien();
+            if (tabId === 'detai') loadDeTai();
+            if (tabId === 'dangky') loadDangKy();
+        }
+
+        // Hiện Toast thông báo
+        function showToast(type, title, msg) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const tTitle = document.getElementById('toastTitle');
+            const tMsg = document.getElementById('toastMsg');
+
+            toast.className = `mb-6 p-4 rounded-xl border flex items-center justify-between shadow-sm transition-all ${
+                type === 'success' 
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                    : 'bg-red-50 border-red-200 text-red-800'
+            }`;
+            icon.className = type === 'success' ? 'fa-solid fa-circle-check text-emerald-600 text-xl' : 'fa-solid fa-triangle-exclamation text-red-600 text-xl';
+            tTitle.innerText = title;
+            tMsg.innerText = msg;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => { toast.classList.add('hidden'); }, 5000);
+        }
+
+        function hideToast() {
+            document.getElementById('toast').classList.add('hidden');
+        }
+
+
+
+        async function loadSinhVien() {
+            const tbody = document.getElementById('sinhVienTableBody');
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/sinhvien`);
+                const data = await res.json();
+                logAction("GET", "/api/v1/sinhvien", res.status, data.message || "Tải dữ liệu sinh viên thành công");
+
+                if (data.data && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(sv => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4 font-semibold text-blue-600">${sv.maSv}</td>
+                    <td class="px-6 py-4 font-medium text-slate-800">${sv.hoTen}</td>
+                    <td class="px-6 py-4 text-slate-600">${sv.chuyenNganh || 'N/A'}</td>
+                    <td class="px-6 py-4 font-semibold text-slate-700">${sv.gpa != null ? sv.gpa.toFixed(2) : 'N/A'}</td>
+                    <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">${sv.trangThai || 'DANG_HOC'}</span></td>
+                    <td class="px-6 py-4 text-right">
+                        ${!jwt ? '' : `<button onclick="editSinhVien('${sv.maSv}')" class="text-amber-600 hover:text-amber-800 text-xs font-semibold px-2 py-1 bg-amber-50 rounded hover:bg-amber-100 transition">
+                            <i class="fa-solid fa-pen mr-1"></i> Sửa
+                        </button>`}
+                    </td>
+                </tr>
+            `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Chưa có sinh viên nào trong CSDL</td></tr>`;
+                }
+            } catch (err) {
+                logAction("GET", "/api/v1/sinhvien", "ERROR", err.message);
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-500 font-medium">Không thể kết nối tới Gateway: ${err.message}</td></tr>`;
+            }
+        }
+
+        // 2. TẠO SINH VIÊN MỚI (POST /api/v1/sinhvien)
+        async function createSinhVien(e) {
+            e.preventDefault();
+            const payload = {
+                maSv: document.getElementById('sv_maSv').value.trim(),
+                hoTen: document.getElementById('sv_hoTen').value.trim(),
+                chuyenNganh: document.getElementById('sv_chuyenNganh').value.trim(),
+                gpa: parseFloat(document.getElementById('sv_gpa').value)
+            };
+
+            // Nếu đang ở chế độ sửa → gửi PUT, ngược lại → POST
+            const isEditing = editingMaSv !== null;
+            const url = isEditing
+                ? `${GATEWAY_BASE_URL}/sinhvien/${editingMaSv}`
+                : `${GATEWAY_BASE_URL}/sinhvien`;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: authHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                logAction(method, isEditing ? `/api/v1/sinhvien/${editingMaSv}` : "/api/v1/sinhvien", res.status, data.message || "Lưu sinh viên");
+
+                if (res.ok) {
+                    showToast('success', 'Thành công!', isEditing
+                        ? `Đã cập nhật sinh viên ${payload.maSv}`
+                        : `Đã thêm sinh viên ${payload.maSv}`);
+                    resetFormSinhVien();
+                    loadSinhVien();
+                } else {
+                    showToast('error', 'Lỗi', data.message || "Thao tác thất bại");
+                }
+            } catch (err) {
+                showToast('error', 'Lỗi kết nối', err.message);
+            }
+        }
+
+        // Reset form + thoát chế độ sửa
+        function resetFormSinhVien() {
+            editingMaSv = null;
+            document.getElementById('formSinhVien').reset();
+            document.getElementById('sv_maSv').readOnly = false;
+            const btn = document.querySelector('#formSinhVien button[type="submit"]');
+            btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Lưu Sinh Viên';
+        }
+
+        // SỬA SINH VIÊN: load dữ liệu vào form và chuyển sang chế độ update
+        async function editSinhVien(maSv) {
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/sinhvien/${maSv}`);
+                const data = await res.json();
+                logAction("GET", `/api/v1/sinhvien/${maSv}`, res.status, data.message || "Lấy dữ liệu sinh viên");
+
+                if (!res.ok || !data.data) {
+                    showToast('error', 'Lỗi', data.message || "Không tìm thấy sinh viên");
+                    return;
+                }
+
+                const sv = data.data;
+                document.getElementById('sv_maSv').value = sv.maSv;
+                document.getElementById('sv_hoTen').value = sv.hoTen || '';
+                document.getElementById('sv_chuyenNganh').value = sv.chuyenNganh || '';
+                document.getElementById('sv_gpa').value = sv.gpa != null ? sv.gpa : '';
+
+                editingMaSv = maSv;
+                document.getElementById('sv_maSv').readOnly = true;   // Khóa mã SV khi sửa
+
+                // Đổi nhãn nút submit
+                const btn = document.querySelector('#formSinhVien button[type="submit"]');
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Cập Nhật Sinh Viên';
+            } catch (err) {
+                showToast('error', 'Lỗi kết nối', err.message);
+            }
+        }
+
+        // 3. LOAD DANH SÁCH ĐỀ TÀI (GET /api/v1/detai)
+        async function loadDeTai() {
+            const tbody = document.getElementById('deTaiTableBody');
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/detai`);
+                const data = await res.json();
+                logAction("GET", "/api/v1/detai", res.status, data.message || "Tải dữ liệu đề tài thành công");
+
+                if (data.data && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(dt => {
+                        const daDK = dt.soLuongDaDangKy ?? 0;
+                        const toiDa = dt.soLuongToiDa ?? 1;
+                        const hetCho = daDK >= toiDa;
+                        const badgeSlot = hetCho
+                            ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">${daDK}/${toiDa} (HẾT)</span>`
+                            : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">${daDK}/${toiDa} (CÒN)</span>`;
+
+                        return `
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-4 font-semibold text-indigo-600">${dt.maDeTai}</td>
+                            <td class="px-6 py-4 font-medium text-slate-800">${dt.tenDeTai}</td>
+                            <td class="px-6 py-4 text-slate-600">${dt.gvhd || 'Chưa phân công'}</td>
+                            <td class="px-6 py-4 text-slate-500 text-xs">${dt.moTa || 'Không có mô tả'}</td>
+                            <td class="px-6 py-4 text-center">${badgeSlot}</td>
+                            <td class="px-6 py-4 text-right space-x-2">
+                                ${!jwt ? '' : `<button onclick="editDeTai('${dt.maDeTai}')" class="text-amber-600 hover:text-amber-800 text-xs font-semibold px-2 py-1 bg-amber-50 rounded hover:bg-amber-100 transition">
+                                    <i class="fa-solid fa-pen mr-1"></i> Sửa
+                                </button>`}
+                                ${!jwt ? '' : `<button onclick="deleteDeTai(${dt.id})" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 bg-red-50 rounded hover:bg-red-100 transition">
+                                    <i class="fa-solid fa-trash mr-1"></i> Xóa
+                                </button>`}
+                            </td>
+                        </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Chưa có đề tài nào trong CSDL</td></tr>`;
+                }
+            } catch (err) {
+                logAction("GET", "/api/v1/detai", "ERROR", err.message);
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-500 font-medium">Không thể kết nối tới Gateway: ${err.message}</td></tr>`;
+            }
+        }
+
+        // XÓA ĐỀ TÀI (DELETE /api/v1/detai/{id})
+        async function deleteDeTai(id) {
+            if (!confirm(`Bạn có chắc muốn xóa đề tài #${id}?`)) return;
+
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/detai/${id}`, { method: 'DELETE', headers: authHeaders() });
+                const data = await res.json();
+                logAction("DELETE", `/api/v1/detai/${id}`, res.status, data.message || "Xóa đề tài");
+
+                if (res.ok) {
+                    showToast('success', 'Thành công!', 'Đã xóa đề tài khỏi hệ thống');
+                    loadDeTai();
+                } else {
+                    showToast('error', 'Thất bại', data.message || "Không thể xóa đề tài");
+                }
+            } catch (err) {
+                showToast('error', 'Lỗi hệ thống', err.message);
+            }
+        }
+
+        // 4. TẠO ĐỀ TÀI MỚI (POST /api/v1/detai)
+        async function createDeTai(e) {
+            e.preventDefault();
+            const payload = {
+                maDeTai: document.getElementById('dt_maDeTai').value.trim(),
+                tenDeTai: document.getElementById('dt_tenDeTai').value.trim(),
+                gvhd: document.getElementById('dt_gvhd').value.trim(),
+                moTa: document.getElementById('dt_moTa').value.trim(),
+                soLuongToiDa: parseInt(document.getElementById('dt_soLuongToiDa').value) || 1
+            };
+
+            const isEditing = editingMaDeTai !== null;
+            const url = isEditing
+                ? `${GATEWAY_BASE_URL}/detai/${editingMaDeTai}`
+                : `${GATEWAY_BASE_URL}/detai`;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: authHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                logAction(method, isEditing ? `/api/v1/detai/${editingMaDeTai}` : "/api/v1/detai", res.status, data.message || "Lưu đề tài");
+
+                if (res.ok) {
+                    showToast('success', 'Thành công!', isEditing
+                        ? `Đã cập nhật đề tài ${payload.maDeTai}`
+                        : `Đã thêm đề tài ${payload.maDeTai}`);
+                    resetFormDeTai();
+                    loadDeTai();
+                } else {
+                    showToast('error', 'Lỗi', data.message || "Thao tác thất bại");
+                }
+            } catch (err) {
+                showToast('error', 'Lỗi kết nối', err.message);
+            }
+        }
+
+        function resetFormDeTai() {
+            editingMaDeTai = null;
+            document.getElementById('formDeTai').reset();
+            document.getElementById('dt_maDeTai').readOnly = false;
+            document.getElementById('dt_soLuongToiDa').value = 1;
+            const btn = document.querySelector('#formDeTai button[type="submit"]');
+            btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Lưu Đề Tài';
+        }
+
+        // SỬA ĐỀ TÀI
+        async function editDeTai(maDeTai) {
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/detai/${maDeTai}`);
+                const data = await res.json();
+                logAction("GET", `/api/v1/detai/${maDeTai}`, res.status, data.message || "Lấy dữ liệu đề tài");
+
+                if (!res.ok || !data.data) {
+                    showToast('error', 'Lỗi', data.message || "Không tìm thấy đề tài");
+                    return;
+                }
+
+                const dt = data.data;
+                document.getElementById('dt_maDeTai').value = dt.maDeTai;
+                document.getElementById('dt_tenDeTai').value = dt.tenDeTai || '';
+                document.getElementById('dt_gvhd').value = dt.gvhd || '';
+                document.getElementById('dt_moTa').value = dt.moTa || '';
+                document.getElementById('dt_soLuongToiDa').value = dt.soLuongToiDa != null ? dt.soLuongToiDa : 1;
+
+                editingMaDeTai = maDeTai;
+                document.getElementById('dt_maDeTai').readOnly = true;
+
+                const btn = document.querySelector('#formDeTai button[type="submit"]');
+                btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Cập Nhật Đề Tài';
+            } catch (err) {
+                showToast('error', 'Lỗi kết nối', err.message);
+            }
+        }
+
+        // 5. LOAD DANH SÁCH ĐÃ ĐĂNG KÝ (GET /api/v1/dangky)
+        async function loadDangKy() {
+            const tbody = document.getElementById('dangKyTableBody');
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/dangky`);
+                const data = await res.json();
+                logAction("GET", "/api/v1/dangky", res.status, data.message || "Tải dữ liệu đăng ký thành công");
+
+                if (data.data && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(dk => `
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-4 text-slate-400 text-xs">#${dk.id}</td>
+                            <td class="px-6 py-4 font-semibold text-blue-600">${dk.maSv}</td>
+                            <td class="px-6 py-4 font-semibold text-indigo-600">${dk.maDeTai}</td>
+                            <td class="px-6 py-4 text-slate-500 text-xs">${dk.ngayDangKy || 'N/A'}</td>
+                            <td class="px-6 py-4 text-slate-600">${dk.ghiChu || '-'}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button onclick="deleteDangKy(${dk.id})" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 bg-red-50 rounded hover:bg-red-100 transition">
+                                    <i class="fa-solid fa-trash mr-1"></i> Hủy ĐK
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Chưa có bản ghi đăng ký nào</td></tr>`;
+                }
+            } catch (err) {
+                logAction("GET", "/api/v1/dangky", "ERROR", err.message);
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-500 font-medium">Không thể kết nối tới Gateway: ${err.message}</td></tr>`;
+            }
+        }
+
+        // ==== XÁC THỰC JWT (LOGIN / LOGOUT) ====
+        async function handleLogin(e) {
+            e.preventDefault();
+            const tenDangNhap = document.getElementById('login_tenDangNhap').value.trim();
+            const matKhau = document.getElementById('login_matKhau').value.trim();
+
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tenDangNhap, matKhau })
+                });
+                const data = await res.json();
+                logAction("POST", "/api/v1/auth/login", res.status, data.message || "Đăng nhập");
+
+                if (res.ok && data.data && data.data.token) {
+                    jwt = data.data.token;                       // token dạng chuỗi
+                    localStorage.setItem('jwt', jwt);
+                    localStorage.setItem('jwtInfo', JSON.stringify({
+                        tenDangNhap: data.data.tenDangNhap,
+                        hoTen: data.data.hoTen,
+                        vaiTro: data.data.vaiTro
+                    }));
+
+                    const info = JSON.parse(localStorage.getItem('jwtInfo'));
+                    document.getElementById('authStatus').innerHTML =
+                        `<span class="text-emerald-600 font-semibold">✔ Đã đăng nhập: ${info.tenDangNhap} (${info.vaiTro})</span>`;
+
+                    showToast('success', 'Đăng nhập thành công!', `Chào ${info.hoTen || info.tenDangNhap} - Vai trò: ${info.vaiTro}`);
+
+                    // Quay lại tab đầu tiên để thấy nút Sửa/Xóa
+                    switchTab('sinhvien');
+                } else {
+                    showToast('error', 'Đăng nhập thất bại', data.message || "Sai tên đăng nhập hoặc mật khẩu");
+                }
+            } catch (err) {
+                showToast('error', 'Lỗi kết nối', err.message);
+            }
+        }
+
+        function handleLogout() {
+            jwt = null;
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('jwtInfo');
+            document.getElementById('authStatus').innerHTML = 'Chưa đăng nhập.';
+            document.getElementById('formDangNhap').reset();
+            showToast('success', 'Đã đăng xuất', 'Các nút Sửa/Xóa đã bị ẩn lại.');
+            loadSinhVien();
+        }
+
+        // 6. THỰC HIỆN ĐĂNG KÝ ĐỒ ÁN (POST /api/v1/dangky) - ĐIỀU PHỐI DỊCH VỤ
+        async function handleDangKy(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitDangKy');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang xác thực liên dịch vụ...`;
+
+            const payload = {
+                maSv: document.getElementById('dk_maSv').value.trim(),
+                maDeTai: document.getElementById('dk_maDeTai').value.trim(),
+                ghiChu: document.getElementById('dk_ghiChu').value.trim()
+            };
+
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/dangky`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                logAction("POST", "/api/v1/dangky", res.status, data.message || "Xử lý đăng ký");
+
+                if (res.ok) {
+                    showToast('success', 'Đăng ký thành công!', `Sinh viên ${payload.maSv} đã đăng ký thành công đề tài ${payload.maDeTai}`);
+                    document.getElementById('formDangKy').reset();
+                    loadDangKy();
+                } else {
+                    // Bắt lỗi từ Feign (Không tìm thấy sinh viên hoặc đề tài đã có người đăng ký)
+                    showToast('error', 'Đăng ký thất bại!', data.message || "Lỗi xác thực dữ liệu từ các service khác");
+                }
+            } catch (err) {
+                showToast('error', 'Lỗi hệ thống', err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Xác Nhận Đăng Ký Đồ Án`;
+            }
+        }
+
+        // 7. XÓA ĐĂNG KÝ (DELETE /api/v1/dangky/{id})
+        async function deleteDangKy(id) {
+            if (!confirm(`Bạn có chắc muốn hủy bản ghi đăng ký #${id}?`)) return;
+
+            try {
+                const res = await fetch(`${GATEWAY_BASE_URL}/dangky/${id}`, { method: 'DELETE', headers: authHeaders() });
+                const data = await res.json();
+                logAction("DELETE", `/api/v1/dangky/${id}`, res.status, data.message || "Hủy đăng ký");
+
+                if (res.ok) {
+                    showToast('success', 'Thành công!', 'Đã hủy bản ghi đăng ký');
+                    loadDangKy();
+                } else {
+                    showToast('error', 'Thất bại', data.message);
+                }
+            } catch (err) {
+                showToast('error', 'Lỗi hệ thống', err.message);
+            }
+        }
+
+        // Khởi động: Tải dữ liệu tab đầu tiên
+        window.addEventListener('DOMContentLoaded', () => {
+            // 4.4e: Khôi phục JWT từ localStorage (giữ đăng nhập sau khi F5)
+            const savedJwt = localStorage.getItem('jwt');
+            if (savedJwt) {
+                jwt = savedJwt;
+                const savedInfo = localStorage.getItem('jwtInfo');
+                if (savedInfo) {
+                    const info = JSON.parse(savedInfo);
+                    document.getElementById('authStatus').innerHTML =
+                        `<span class="text-emerald-600 font-semibold">✔ Đã đăng nhập: ${info.tenDangNhap} (${info.vaiTro})</span>`;
+                }
+            }
+            loadSinhVien();
+        });
+    </script>
+</body>
+</html>

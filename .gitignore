@@ -6,6 +6,11 @@ pom.xml.versionsBackup
 pom.xml.next
 release.properties
 
+# Frontend build & dependencies
+node_modules/
+dist/
+.angular/
+
 # IDE & Editor
 .idea/
 *.iml
@@ -22,13 +27,6 @@ HELP.md
 *.tmp
 .DS_Store
 
-# Exclude internal documentation files
-docs/
-TASK-CHECKLIST.md
-TASK_ASSIGNMENT.md
-SOA_SYSTEM_ANALYSIS_AND_DESIGN.md
+# Documents
 *.doc
 *.docx
-
-# Temporary ignore frontend until user finishes UI editing
-frontend/
