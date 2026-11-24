@@ -1,0 +1,59 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+              - "http://127.0.0.1:4200"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+      routes:
+        - id: auth-service
+          uri: 
+          predicates:
+            - Path=/api/v1/auth/**
+
+        - id: user-service-sv
+          uri: 
+          predicates:
+            - Path=/api/v1/sinhvien/**, /api/v1/giangvien/**, /api/v1/khoa/**, /api/v1/lop/**
+
+        - id: detai-service
+          uri: 
+          predicates:
+            - Path=/api/v1/detai/**
+
+        - id: council-service
+          uri: 
+          predicates:
+            - Path=/api/v1/hoi-dong/**
+
+        - id: grading-service
+          uri: 
+          predicates:
+            - Path=/api/v1/diem/**
+
+        - id: analytics-service
+          uri: 
+          predicates:
+            - Path=/api/v1/thong-ke/**
+
+        - id: notification-service
+          uri: 
+          predicates:
+            - Path=/api/v1/thong-bao/**
+
+        - id: storage-service
+          uri: 
+          predicates:
+            - Path=/api/v1/tai-lieu/**

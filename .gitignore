@@ -10,6 +10,9 @@ release.properties
 .idea/
 *.iml
 .vscode/
+.metals/
+.bloop/
+HELP.md
 *.classpath
 *.project
 *.settings/
@@ -19,6 +22,13 @@ release.properties
 *.tmp
 .DS_Store
 
-# Local documentation (kept locally, excluded from remote)
-README.md
+# Exclude internal documentation files
+docs/
+TASK-CHECKLIST.md
+TASK_ASSIGNMENT.md
 SOA_SYSTEM_ANALYSIS_AND_DESIGN.md
+*.doc
+*.docx
+
+# Temporary ignore frontend until user finishes UI editing
+frontend/
