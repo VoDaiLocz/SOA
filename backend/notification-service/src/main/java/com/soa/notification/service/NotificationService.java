@@ -1,10 +1,60 @@
 package com.soa.notification.service;
 
 import com.soa.notification.dto.NotificationDTOs.*;
-import java.util.List;
+import com.soa.notification.entity.ThongBao;
+import com.soa.notification.repository.ThongBaoRepository;
+import com.soa.notification.service.interfaces.INotificationService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-public interface NotificationService {
-    List<ThongBaoDTO> getThongBaoByNguoiNhan(String maNguoiNhan);
-    void danhDauDaDoc(Long id);
-    ThongBaoDTO guiThongBao(GuiThongBaoRequest req);
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class NotificationService implements INotificationService {
+
+    private final ThongBaoRepository thongBaoRepository;
+
+    public NotificationService(ThongBaoRepository thongBaoRepository) {
+        this.thongBaoRepository = thongBaoRepository;
+    }
+
+    private ThongBaoDTO toDto(ThongBao tb) {
+        return new ThongBaoDTO(
+                tb.getId(),
+                tb.getMaNguoiNhan(),
+                tb.getTieuDe(),
+                tb.getNoiDung(),
+                tb.getLoaiThongBao(),
+                tb.getDaDoc(),
+                tb.getNgayGui()
+        );
+    }
+
+    @Override
+    public List<ThongBaoDTO> getThongBaoByNguoiNhan(String maNguoiNhan) {
+        return thongBaoRepository.findByMaNguoiNhanOrderByNgayGuiDesc(maNguoiNhan)
+                .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void danhDauDaDoc(Long id) {
+        thongBaoRepository.findById(id).ifPresent(tb -> {
+            tb.setDaDoc(true);
+            thongBaoRepository.save(tb);
+        });
+    }
+
+    @Override
+    @Transactional
+    public ThongBaoDTO guiThongBao(GuiThongBaoRequest req) {
+        ThongBao tb = new ThongBao(
+                req.getMaNguoiNhan(),
+                req.getTieuDe(),
+                req.getNoiDung(),
+                req.getLoaiThongBao()
+        );
+        return toDto(thongBaoRepository.save(tb));
+    }
 }

@@ -2,7 +2,7 @@ package com.soa.auth.controller;
 
 import com.soa.auth.dto.ApiResponse;
 import com.soa.auth.dto.AuthDTOs.*;
-import com.soa.auth.service.AuthService;
+import com.soa.auth.service.interfaces.IAuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final IAuthService authService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(IAuthService authService) {
         this.authService = authService;
     }
 

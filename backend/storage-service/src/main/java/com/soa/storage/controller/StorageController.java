@@ -2,7 +2,7 @@ package com.soa.storage.controller;
 
 import com.soa.storage.dto.ApiResponse;
 import com.soa.storage.dto.StorageDTOs.TaiLieuDTO;
-import com.soa.storage.service.StorageService;
+import com.soa.storage.service.interfaces.IStorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,9 +17,9 @@ import java.util.List;
 @RequestMapping("/api/v1/tai-lieu")
 public class StorageController {
 
-    private final StorageService storageService;
+    private final IStorageService storageService;
 
-    public StorageController(StorageService storageService) {
+    public StorageController(IStorageService storageService) {
         this.storageService = storageService;
     }
 

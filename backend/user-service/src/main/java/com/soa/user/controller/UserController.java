@@ -2,7 +2,7 @@ package com.soa.user.controller;
 
 import com.soa.user.dto.ApiResponse;
 import com.soa.user.dto.UserDTOs.*;
-import com.soa.user.service.UserService;
+import com.soa.user.service.interfaces.IUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class UserController {
 
-    private final UserService userService;
+    private final IUserService userService;
 
-    public UserController(UserService userService) {
+    public UserController(IUserService userService) {
         this.userService = userService;
     }
 

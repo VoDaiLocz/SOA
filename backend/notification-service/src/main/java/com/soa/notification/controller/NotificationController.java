@@ -2,7 +2,7 @@ package com.soa.notification.controller;
 
 import com.soa.notification.dto.ApiResponse;
 import com.soa.notification.dto.NotificationDTOs.*;
-import com.soa.notification.service.NotificationService;
+import com.soa.notification.service.interfaces.INotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/v1/thong-bao")
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
 
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(INotificationService notificationService) {
         this.notificationService = notificationService;
     }
 

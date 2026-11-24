@@ -2,7 +2,7 @@ package com.soa.grading.controller;
 
 import com.soa.grading.dto.ApiResponse;
 import com.soa.grading.dto.GradingDTOs.*;
-import com.soa.grading.service.GradingService;
+import com.soa.grading.service.interfaces.IGradingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/v1/diem")
 public class GradingController {
 
-    private final GradingService gradingService;
+    private final IGradingService gradingService;
 
-    public GradingController(GradingService gradingService) {
+    public GradingController(IGradingService gradingService) {
         this.gradingService = gradingService;
     }
 

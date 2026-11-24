@@ -2,7 +2,7 @@ package com.soa.analytics.controller;
 
 import com.soa.analytics.dto.ApiResponse;
 import com.soa.analytics.dto.AnalyticsDTOs.*;
-import com.soa.analytics.service.AnalyticsService;
+import com.soa.analytics.service.interfaces.IAnalyticsService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/thong-ke")
 public class AnalyticsController {
 
-    private final AnalyticsService analyticsService;
+    private final IAnalyticsService analyticsService;
 
-    public AnalyticsController(AnalyticsService analyticsService) {
+    public AnalyticsController(IAnalyticsService analyticsService) {
         this.analyticsService = analyticsService;
     }
 

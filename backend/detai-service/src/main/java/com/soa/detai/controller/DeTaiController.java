@@ -2,7 +2,7 @@ package com.soa.detai.controller;
 
 import com.soa.detai.dto.ApiResponse;
 import com.soa.detai.dto.DeTaiDTOs.*;
-import com.soa.detai.service.DeTaiService;
+import com.soa.detai.service.interfaces.IDeTaiService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/v1/detai")
 public class DeTaiController {
 
-    private final DeTaiService deTaiService;
+    private final IDeTaiService deTaiService;
 
-    public DeTaiController(DeTaiService deTaiService) {
+    public DeTaiController(IDeTaiService deTaiService) {
         this.deTaiService = deTaiService;
     }
 

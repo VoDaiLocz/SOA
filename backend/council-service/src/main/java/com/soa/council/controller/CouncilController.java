@@ -2,7 +2,7 @@ package com.soa.council.controller;
 
 import com.soa.council.dto.ApiResponse;
 import com.soa.council.dto.CouncilDTOs.*;
-import com.soa.council.service.CouncilService;
+import com.soa.council.service.interfaces.ICouncilService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/v1/hoi-dong")
 public class CouncilController {
 
-    private final CouncilService councilService;
+    private final ICouncilService councilService;
 
-    public CouncilController(CouncilService councilService) {
+    public CouncilController(ICouncilService councilService) {
         this.councilService = councilService;
     }
 
