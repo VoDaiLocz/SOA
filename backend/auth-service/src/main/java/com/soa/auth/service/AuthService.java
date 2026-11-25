@@ -73,9 +73,4 @@ public class AuthService implements IAuthService {
         taiKhoanRepository.save(tk);
     }
 
-    @Override
-    public void quenMatKhau(QuenMatKhauRequest request) {
-        taiKhoanRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại trong hệ thống"));
-    }
 }

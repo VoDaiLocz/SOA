@@ -104,12 +104,4 @@ public class AuthDTOs {
         public void setMatKhauMoi(String matKhauMoi) { this.matKhauMoi = matKhauMoi; }
     }
 
-    public static class QuenMatKhauRequest {
-        private String email;
-
-        public QuenMatKhauRequest() {}
-
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-    }
 }

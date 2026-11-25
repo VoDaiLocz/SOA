@@ -47,13 +47,4 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/quen-mat-khau")
-    public ResponseEntity<ApiResponse<Void>> quenMatKhau(@RequestBody QuenMatKhauRequest request) {
-        try {
-            authService.quenMatKhau(request);
-            return ResponseEntity.ok(ApiResponse.ok("Đã gửi hướng dẫn đặt lại mật khẩu về email", null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
-    }
 }
