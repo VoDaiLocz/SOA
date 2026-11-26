@@ -16,3 +16,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+
+app:
+  services:
+    detai-url: ${DETAI_SERVICE_URL:http://localhost:8082}

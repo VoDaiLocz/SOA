@@ -1,6 +1,8 @@
 package com.soa.analytics.service;
 
+import com.soa.analytics.client.DeTaiClient;
 import com.soa.analytics.dto.AnalyticsDTOs.*;
+import com.soa.analytics.dto.ApiResponse;
 import com.soa.analytics.entity.SoLieuTongHop;
 import com.soa.analytics.repository.SoLieuTongHopRepository;
 import com.soa.analytics.service.interfaces.IAnalyticsService;
@@ -10,7 +12,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -19,27 +23,42 @@ public class AnalyticsService implements IAnalyticsService {
     private static final Logger log = LoggerFactory.getLogger(AnalyticsService.class);
 
     private final SoLieuTongHopRepository repository;
+    private final DeTaiClient deTaiClient;
 
-    public AnalyticsService(SoLieuTongHopRepository repository) {
+    public AnalyticsService(SoLieuTongHopRepository repository, DeTaiClient deTaiClient) {
         this.repository = repository;
+        this.deTaiClient = deTaiClient;
+    }
+
+    private List<DeTaiClientDTO> fetchAllDeTai() {
+        ApiResponse<List<DeTaiClientDTO>> response = deTaiClient.getAllDeTai();
+        if (response == null || response.getData() == null) {
+            return Collections.emptyList();
+        }
+        return response.getData();
     }
 
     @Override
     @Cacheable(value = "thongKeDeTai")
     public ThongKeTrangThaiDTO getThongKeTheoTrangThai() {
-        log.info("Computing ThongKeTheoTrangThai from database (uncached)");
-        Map<String, Integer> phanBo = new HashMap<>();
-        phanBo.put("CHO_DUYET", 1);
-        phanBo.put("DA_DUYET", 1);
-        phanBo.put("DANG_THUC_HIEN", 1);
+        log.info("Computing ThongKeTheoTrangThai from detai-service");
+        List<DeTaiClientDTO> list = fetchAllDeTai();
+
+        Map<String, Integer> phanBo = new LinkedHashMap<>();
+        phanBo.put("CHO_DUYET", 0);
+        phanBo.put("DA_DUYET", 0);
+        phanBo.put("DANG_THUC_HIEN", 0);
         phanBo.put("CHO_NGHIEM_THU", 0);
-        phanBo.put("DA_NGHIEM_THU", 1);
+        phanBo.put("DA_NGHIEM_THU", 0);
         phanBo.put("DA_HUY", 0);
 
-        int total = phanBo.values().stream().mapToInt(Integer::intValue).sum();
+        for (DeTaiClientDTO dt : list) {
+            String status = dt.getTrangThai() != null ? dt.getTrangThai() : "CHO_DUYET";
+            phanBo.put(status, phanBo.getOrDefault(status, 0) + 1);
+        }
 
         return new ThongKeTrangThaiDTO(
-                total,
+                list.size(),
                 phanBo.get("CHO_DUYET"),
                 phanBo.get("DA_DUYET"),
                 phanBo.get("DANG_THUC_HIEN"),
@@ -54,34 +73,72 @@ public class AnalyticsService implements IAnalyticsService {
     @Cacheable(value = "thongKeDeTai", key = "#khoa != null ? #khoa : 'ALL'")
     public TiLeKetQuaDTO getTiLeKetQua(String khoa) {
         log.info("Computing TiLeKetQua for khoa: {}", khoa);
-        SoLieuTongHop sl = repository.findTopByOrderByNgayTongHopDesc().orElse(
-                new SoLieuTongHop("Học kỳ 1 Năm học 2026-2027", 4, 3, 1, 1)
-        );
-
-        int total = sl.getTongSoDeTai();
-        int dat = sl.getSoDeTaiDat();
-        double tyLe = total > 0 ? Math.round(((double) dat / total) * 1000.0) / 10.0 : 0.0;
-
-        return new TiLeKetQuaDTO(
-                sl.getKyBaoCao(),
-                total,
-                dat,
-                sl.getSoDeTaiKhongDat() != null ? sl.getSoDeTaiKhongDat() : 0,
-                tyLe
-        );
+        return repository.findTopByOrderByNgayTongHopDesc()
+                .map(sl -> {
+                    int total = sl.getTongSoDeTai() != null ? sl.getTongSoDeTai() : 0;
+                    int dat = sl.getSoDeTaiDat() != null ? sl.getSoDeTaiDat() : 0;
+                    int khongDat = sl.getSoDeTaiKhongDat() != null ? sl.getSoDeTaiKhongDat() : 0;
+                    double tyLe = total > 0 ? Math.round(((double) dat / total) * 1000.0) / 10.0 : 0.0;
+                    return new TiLeKetQuaDTO(sl.getKyBaoCao(), total, dat, khongDat, tyLe);
+                })
+                .orElseGet(() -> {
+                    List<DeTaiClientDTO> list = fetchAllDeTai();
+                    int total = list.size();
+                    int dat = (int) list.stream().filter(d -> "DA_NGHIEM_THU".equals(d.getTrangThai())).count();
+                    int khongDat = (int) list.stream().filter(d -> "DA_HUY".equals(d.getTrangThai())).count();
+                    double tyLe = total > 0 ? Math.round(((double) dat / total) * 1000.0) / 10.0 : 0.0;
+                    return new TiLeKetQuaDTO("Hiện tại", total, dat, khongDat, tyLe);
+                });
     }
 
     @Override
     public TienDoDeTaiDTO getTienDoThucHien() {
-        return new TienDoDeTaiDTO(3, 0, 1);
+        List<DeTaiClientDTO> list = fetchAllDeTai();
+        int dungTienDo = 0;
+        int chamTienDo = 0;
+        int daHoanThanh = 0;
+
+        for (DeTaiClientDTO dt : list) {
+            String status = dt.getTrangThai();
+            if ("DA_NGHIEM_THU".equals(status)) {
+                daHoanThanh++;
+            } else if ("DA_HUY".equals(status)) {
+                chamTienDo++;
+            } else {
+                dungTienDo++;
+            }
+        }
+
+        return new TienDoDeTaiDTO(dungTienDo, chamTienDo, daHoanThanh);
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 
     @Override
     public byte[] xuatBaoCao(String dinhDang) {
-        String csvContent = "STT,Mã Đề Tài,Tên Đề Tài,Chủ Nhiệm,GVHD,Kinh Phí,Trạng Thái\n" +
-                "1,DT01,Nghiên cứu IoT nông nghiệp thông minh,Võ Đại Lộc,TS. Nguyễn Văn Hùng,20000000,DA_DUYET\n" +
-                "2,DT02,Mô hình Deep Learning bệnh cây trồng,Quách Duy Khoa,PGS.TS. Trần Thị Lan,18000000,CHO_DUYET\n" +
-                "3,DT03,Hệ thống Quản lý Đề tài NCKH SOA,Hồ Đoàn Chiến,TS. Nguyễn Văn Hùng,25000000,DANG_THUC_HIEN\n";
-        return csvContent.getBytes(StandardCharsets.UTF_8);
+        List<DeTaiClientDTO> list = fetchAllDeTai();
+        StringBuilder sb = new StringBuilder();
+        sb.append('\uFEFF'); // UTF-8 BOM for Excel compatibility
+        sb.append("STT,Mã Đề Tài,Tên Đề Tài,Lĩnh Vực,Mã SV Chủ Nhiệm,GVHD,Kinh Phí Dự Kiến,Trạng Thái\n");
+
+        int stt = 1;
+        for (DeTaiClientDTO dt : list) {
+            sb.append(stt++).append(",")
+              .append(escapeCsv(dt.getMaDeTai())).append(",")
+              .append(escapeCsv(dt.getTenDeTai())).append(",")
+              .append(escapeCsv(dt.getLinhVuc())).append(",")
+              .append(escapeCsv(dt.getMaSvChuNhiem())).append(",")
+              .append(escapeCsv(dt.getTenGvhd())).append(",")
+              .append(dt.getKinhPhiDuKien() != null ? dt.getKinhPhiDuKien().longValue() : 0).append(",")
+              .append(escapeCsv(dt.getTrangThai())).append("\n");
+        }
+
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 }

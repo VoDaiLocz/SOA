@@ -96,4 +96,34 @@ public class AnalyticsDTOs {
         public int getDaHoanThanh() { return daHoanThanh; }
         public void setDaHoanThanh(int daHoanThanh) { this.daHoanThanh = daHoanThanh; }
     }
+
+    public static class DeTaiClientDTO implements Serializable {
+        private String maDeTai;
+        private String tenDeTai;
+        private String linhVuc;
+        private Double kinhPhiDuKien;
+        private String maSvChuNhiem;
+        private String maGvhd;
+        private String tenGvhd;
+        private String trangThai;
+
+        public DeTaiClientDTO() {}
+
+        public String getMaDeTai() { return maDeTai; }
+        public void setMaDeTai(String maDeTai) { this.maDeTai = maDeTai; }
+        public String getTenDeTai() { return tenDeTai; }
+        public void setTenDeTai(String tenDeTai) { this.tenDeTai = tenDeTai; }
+        public String getLinhVuc() { return linhVuc; }
+        public void setLinhVuc(String linhVuc) { this.linhVuc = linhVuc; }
+        public Double getKinhPhiDuKien() { return kinhPhiDuKien; }
+        public void setKinhPhiDuKien(Double kinhPhiDuKien) { this.kinhPhiDuKien = kinhPhiDuKien; }
+        public String getMaSvChuNhiem() { return maSvChuNhiem; }
+        public void setMaSvChuNhiem(String maSvChuNhiem) { this.maSvChuNhiem = maSvChuNhiem; }
+        public String getMaGvhd() { return maGvhd; }
+        public void setMaGvhd(String maGvhd) { this.maGvhd = maGvhd; }
+        public String getTenGvhd() { return tenGvhd; }
+        public void setTenGvhd(String tenGvhd) { this.tenGvhd = tenGvhd; }
+        public String getTrangThai() { return trangThai; }
+        public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+    }
 }

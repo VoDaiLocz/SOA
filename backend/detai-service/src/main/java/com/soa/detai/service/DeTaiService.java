@@ -169,8 +169,12 @@ public class DeTaiService implements IDeTaiService {
             if (svRes == null || svRes.getData() == null || !"DANG_HOC".equals(svRes.getData().getTrangThai())) {
                 throw new IllegalArgumentException("Sinh viên không hợp lệ hoặc đã bị khóa");
             }
+        } catch (feign.FeignException.NotFound e) {
+            throw new IllegalArgumentException("Không tìm thấy sinh viên trong hệ thống: " + req.getMaSv());
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
-            log.warn("Không thể kiểm tra sinh viên qua Feign: {}", e.getMessage());
+            throw new IllegalStateException("Không thể kết nối đến user-service để xác thực sinh viên: " + e.getMessage());
         }
 
         DangKy dk = new DangKy();
