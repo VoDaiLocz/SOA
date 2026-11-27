@@ -1,0 +1,79 @@
+<div class="auth-wrapper">
+  <div class="card auth-card">
+    <div class="auth-header">
+      <img src="assets/images/logo_qnu.png" alt="QNU Logo" />
+      <h2>CỔNG XÁC THỰC HỆ THỐNG NCKH</h2>
+      <p>Trường Đại học Quy Nhơn</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button [class.active]="mode === 'login'" (click)="mode = 'login'; errorMsg = ''; successMsg = ''">Đăng nhập</button>
+      <button [class.active]="mode === 'register'" (click)="mode = 'register'; errorMsg = ''; successMsg = ''">Đăng ký SV</button>
+      <button [class.active]="mode === 'change-password'" (click)="mode = 'change-password'; errorMsg = ''; successMsg = ''">Đổi mật khẩu</button>
+    </div>
+
+    <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+    <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
+
+    <!-- Login -->
+    <form *ngIf="mode === 'login'" (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <label>Tên đăng nhập</label>
+        <input type="text" class="form-control" [(ngModel)]="loginForm.tenDangNhap" name="tenDangNhap" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu</label>
+        <input type="password" class="form-control" [(ngModel)]="loginForm.matKhau" name="matKhau" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-full" [disabled]="loading">
+        {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
+      </button>
+    </form>
+
+    <!-- Register -->
+    <form *ngIf="mode === 'register'" (ngSubmit)="onRegister()">
+      <div class="form-group">
+        <label>Tên đăng nhập</label>
+        <input type="text" class="form-control" [(ngModel)]="registerForm.tenDangNhap" name="regUser" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu</label>
+        <input type="password" class="form-control" [(ngModel)]="registerForm.matKhau" name="regPass" required />
+      </div>
+      <div class="form-group">
+        <label>Họ và tên</label>
+        <input type="text" class="form-control" [(ngModel)]="registerForm.hoTen" name="regName" required />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" [(ngModel)]="registerForm.email" name="regEmail" required />
+      </div>
+      <div class="form-group">
+        <label>Mã sinh viên</label>
+        <input type="text" class="form-control" [(ngModel)]="registerForm.maSinhVien" name="regMaSv" required />
+      </div>
+      <button type="submit" class="btn btn-crimson w-full" [disabled]="loading">
+        {{ loading ? 'Đang đăng ký...' : 'Đăng ký tài khoản' }}
+      </button>
+    </form>
+
+    <!-- Change Password -->
+    <form *ngIf="mode === 'change-password'" (ngSubmit)="onChangePassword()">
+      <div class="form-group">
+        <label>Tên đăng nhập</label>
+        <input type="text" class="form-control" [(ngModel)]="pwdForm.tenDangNhap" name="pwdUser" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu cũ</label>
+        <input type="password" class="form-control" [(ngModel)]="pwdForm.matKhauCu" name="pwdOld" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu mới</label>
+        <input type="password" class="form-control" [(ngModel)]="pwdForm.matKhauMoi" name="pwdNew" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-full" [disabled]="loading">
+        {{ loading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu' }}
+      </button>
+    </form>
+  </div>
+</div>

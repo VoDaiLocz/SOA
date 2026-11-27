@@ -1,0 +1,58 @@
+<div class="container" style="padding-top: 28px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div class="section-header" style="margin-bottom: 0;">
+      <div class="sub">DANH BẠ NHÂN LỰC KHOA HỌC</div>
+      <h2>NHÀ KHOA HỌC &amp; GIẢNG VIÊN</h2>
+    </div>
+    <button class="btn btn-crimson" (click)="showForm = !showForm">
+      {{ showForm ? 'Đóng biểu mẫu' : '+ Thêm Giảng viên' }}
+    </button>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
+
+  <div class="card" style="margin-bottom: 18px;" *ngIf="showForm">
+    <form (ngSubmit)="onCreate()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+      <div class="form-group"><label>Mã GV *</label><input class="form-control" [(ngModel)]="form.maGv" name="maGv" required /></div>
+      <div class="form-group"><label>Họ và tên *</label><input class="form-control" [(ngModel)]="form.hoTen" name="hoTen" required /></div>
+      <div class="form-group"><label>Học vị</label><input class="form-control" [(ngModel)]="form.hocVi" name="hocVi" /></div>
+      <div class="form-group"><label>Khoa</label><input class="form-control" [(ngModel)]="form.khoa" name="khoa" /></div>
+      <div class="form-group"><label>Bộ môn</label><input class="form-control" [(ngModel)]="form.boMon" name="boMon" /></div>
+      <div class="form-group"><label>Email</label><input class="form-control" [(ngModel)]="form.email" name="email" /></div>
+      <div class="form-group"><label>Số điện thoại</label><input class="form-control" [(ngModel)]="form.soDienThoai" name="sdt" /></div>
+      <div class="form-group"><label>Hướng nghiên cứu</label><input class="form-control" [(ngModel)]="form.huongNghienCuu" name="hnc" /></div>
+      <div style="grid-column: 1 / -1;"><button type="submit" class="btn btn-primary">Lưu thông tin</button></div>
+    </form>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <input type="text" class="form-control" [(ngModel)]="searchText" placeholder="Tìm giảng viên theo mã, họ tên, khoa, hướng nghiên cứu..." />
+  </div>
+
+  <div class="card table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã GV</th>
+          <th>Học vị &amp; Họ Tên</th>
+          <th>Khoa / Bộ Môn</th>
+          <th>Email / SĐT</th>
+          <th>Hướng Nghiên Cứu</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let gv of filtered">
+          <td><strong>{{ gv.maGv }}</strong></td>
+          <td>{{ gv.hocVi }} {{ gv.hoTen }}</td>
+          <td>{{ gv.khoa }} — {{ gv.boMon }}</td>
+          <td>
+            <div>{{ gv.email }}</div>
+            <div style="font-size: 12px; color: #64748b;">{{ gv.soDienThoai }}</div>
+          </td>
+          <td>{{ gv.huongNghienCuu }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

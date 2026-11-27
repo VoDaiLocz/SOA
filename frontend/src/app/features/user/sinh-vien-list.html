@@ -1,0 +1,63 @@
+<div class="container" style="padding-top: 28px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div class="section-header" style="margin-bottom: 0;">
+      <div class="sub">QUẢN LÝ HỒ SƠ NGƯỜI HỌC</div>
+      <h2>DANH SÁCH SINH VIÊN NGHIÊN CỨU</h2>
+    </div>
+    <button class="btn btn-crimson" (click)="showForm = !showForm">
+      {{ showForm ? 'Đóng biểu mẫu' : '+ Thêm Sinh viên' }}
+    </button>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
+
+  <div class="card" style="margin-bottom: 18px;" *ngIf="showForm">
+    <form (ngSubmit)="onCreate()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
+      <div class="form-group"><label>Mã SV *</label><input class="form-control" [(ngModel)]="form.maSv" name="maSv" required /></div>
+      <div class="form-group"><label>Họ và tên *</label><input class="form-control" [(ngModel)]="form.hoTen" name="hoTen" required /></div>
+      <div class="form-group"><label>Lớp</label><input class="form-control" [(ngModel)]="form.lop" name="lop" /></div>
+      <div class="form-group"><label>Khoa</label><input class="form-control" [(ngModel)]="form.khoa" name="khoa" /></div>
+      <div class="form-group"><label>Chuyên ngành</label><input class="form-control" [(ngModel)]="form.chuyenNganh" name="cn" /></div>
+      <div class="form-group"><label>Email</label><input class="form-control" [(ngModel)]="form.email" name="email" /></div>
+      <div class="form-group"><label>GPA</label><input type="number" step="0.01" class="form-control" [(ngModel)]="form.gpa" name="gpa" /></div>
+      <div style="grid-column: 1 / -1;"><button type="submit" class="btn btn-primary">Lưu sinh viên</button></div>
+    </form>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <input type="text" class="form-control" [(ngModel)]="searchText" placeholder="Tìm theo Mã SV, Họ tên hoặc Lớp..." />
+  </div>
+
+  <div class="card table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã SV</th>
+          <th>Họ Tên</th>
+          <th>Lớp / Khoa</th>
+          <th>Chuyên Ngành</th>
+          <th>GPA</th>
+          <th>Trạng Thái</th>
+          <th>Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sv of filtered">
+          <td><strong>{{ sv.maSv }}</strong></td>
+          <td>
+            <div style="font-weight: 600;">{{ sv.hoTen }}</div>
+            <div style="font-size: 12px; color: #64748b;">{{ sv.email }}</div>
+          </td>
+          <td>{{ sv.lop }} ({{ sv.khoa }})</td>
+          <td>{{ sv.chuyenNganh }}</td>
+          <td>{{ sv.gpa }}</td>
+          <td><span class="badge badge-DA_NGHIEM_THU">{{ sv.trangThai }}</span></td>
+          <td>
+            <button class="btn btn-crimson" style="padding: 4px 10px; font-size: 12px;" (click)="onDelete(sv.maSv)">Xóa</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,3 +1,96 @@
-<main>
+<!-- Top Brand Bar (White, matching csdlkh.qnu.edu.vn) -->
+<header class="qnu-top-brand">
+  <div class="container brand-inner">
+    <a routerLink="/" class="brand-logo-link">
+      <img src="assets/images/logo_qnu.png" alt="TRƯỜNG ĐẠI HỌC QUY NHƠN" title="TRƯỜNG ĐẠI HỌC QUY NHƠN" class="qnu-logo" />
+    </a>
+    <div class="brand-titles">
+      <h2>CƠ SỞ DỮ LIỆU KHOA HỌC VÀ CÔNG NGHỆ</h2>
+      <p>HỆ THỐNG QUẢN LÝ ĐỀ TÀI NGHIÊN CỨU KHOA HỌC &amp; ĐỒ ÁN TỐT NGHIỆP</p>
+    </div>
+  </div>
+</header>
+
+<!-- Sticky Navy Blue Navbar (#2a579a) -->
+<nav class="qnu-navbar">
+  <div class="container nav-inner">
+    <button class="mobile-toggle" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Menu">
+      ☰
+    </button>
+
+    <div class="nav-links" [class.open]="mobileMenuOpen">
+      <a routerLink="/" routerLinkActive="active-pill" [routerLinkActiveOptions]="{ exact: true }" (click)="mobileMenuOpen = false">TRANG CHỦ</a>
+      <a routerLink="/de-tai" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">ĐỀ TÀI NCKH</a>
+      <a routerLink="/giang-vien" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">NHÀ KHOA HỌC</a>
+      <a routerLink="/sinh-vien" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">SINH VIÊN</a>
+      <a routerLink="/hoi-dong" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">HỘI ĐỒNG</a>
+      <a routerLink="/cham-diem" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">CHẤM ĐIỂM</a>
+      <a routerLink="/thong-ke" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">THỐNG KÊ</a>
+      <a routerLink="/tai-lieu" routerLinkActive="active-pill" (click)="mobileMenuOpen = false">BIỂU MẪU &amp; TÀI LIỆU</a>
+    </div>
+
+    <div class="nav-actions">
+      <ng-container *ngIf="authService.isLoggedIn(); else loginBtn">
+        <div class="notif-wrapper">
+          <button class="notif-btn" (click)="toggleNotif()" title="Thông báo">
+            🔔
+            <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </button>
+          <div class="notif-dropdown" *ngIf="showNotifDropdown">
+            <div class="notif-header">Thông báo hệ thống</div>
+            <div class="notif-empty" *ngIf="notifications.length === 0">Không có thông báo mới</div>
+            <div class="notif-item" *ngFor="let tb of notifications" [class.unread]="!tb.daDoc" (click)="markAsRead(tb)">
+              <div class="notif-title">{{ tb.tieuDe }}</div>
+              <div class="notif-body">{{ tb.noiDung }}</div>
+            </div>
+          </div>
+        </div>
+        <span class="user-pill" *ngIf="authService.getCurrentUser() as user">
+          {{ user.hoTen }} ({{ user.vaiTro }})
+        </span>
+        <button class="btn-nav-auth" (click)="logout()">ĐĂNG XUẤT</button>
+      </ng-container>
+      <ng-template #loginBtn>
+        <a routerLink="/auth/login" class="btn-nav-auth">ĐĂNG NHẬP</a>
+      </ng-template>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="qnu-main">
   <router-outlet></router-outlet>
 </main>
+
+<!-- Footer (Dark Gray + Black bar, matching csdlkh.qnu.edu.vn) -->
+<footer class="qnu-footer">
+  <div class="container footer-inner">
+    <div class="footer-col">
+      <h3>Thông tin liên hệ</h3>
+      <p>
+        <span class="footer-icon">📍</span>
+        <strong>Địa chỉ:</strong> Phòng Khoa học công nghệ &amp; Hợp tác quốc tế - Trường Đại học Quy Nhơn. Số 170 An Dương Vương, TP Quy Nhơn
+      </p>
+      <p>
+        <span class="footer-icon">📞</span>
+        <strong>Số điện thoại:</strong> <a href="tel:02563846817">0256 3846817</a>
+      </p>
+      <p>
+        <span class="footer-icon">✉️</span>
+        <strong>Email:</strong> <a href="mailto:pkhcn&#64;qnu.edu.vn">pkhcn&#64;qnu.edu.vn</a>
+      </p>
+    </div>
+    <div class="footer-col">
+      <h3>Liên kết nhanh</h3>
+      <ul class="footer-links">
+        <li><a routerLink="/de-tai">Danh mục Đề tài - Dự án - Sáng kiến</a></li>
+        <li><a routerLink="/giang-vien">Đội ngũ Nhà khoa học - Giảng viên</a></li>
+        <li><a routerLink="/tai-lieu">Kho biểu mẫu &amp; Tài liệu thuyết minh</a></li>
+        <li><a routerLink="/thong-ke">Báo cáo thống kê KHCN</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    Bản quyền thuộc Trường Đại học Quy Nhơn © 2026 — Hệ thống Quản lý Nghiên cứu Khoa học (SOA Microservices).
+  </div>
+</footer>

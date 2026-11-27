@@ -1,0 +1,165 @@
+.qnu-hero {
+  background-image: url('/assets/images/qnu-campus.jpg');
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 370px;
+  display: flex;
+  align-items: stretch;
+}
+
+.hero-overlay {
+  width: 100%;
+  background: linear-gradient(180deg, rgba(15, 29, 58, 0.78) 0%, rgba(22, 45, 86, 0.85) 100%);
+  display: flex;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.hero-content {
+  text-align: center;
+  color: #ffffff;
+}
+
+.hero-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #e2e8f0;
+}
+
+.hero-content h1 {
+  font-size: 38px;
+  font-weight: 700;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+.hero-content h1 span {
+  color: #f2184f;
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: #cbd5e1;
+  margin-top: 8px;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 10px 22px;
+  min-width: 150px;
+}
+
+.stat-num {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fa7035;
+}
+
+.stat-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #e2e8f0;
+}
+
+.hero-search {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  gap: 8px;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.hero-search input {
+  flex: 1;
+  border: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  color: #1e293b;
+}
+
+.portal-section {
+  margin-top: 36px;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.portal-card {
+  background: #ffffff;
+  border: 1px solid #dce4ee;
+  border-radius: 8px;
+  padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.portal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(42, 87, 154, 0.12);
+  border-color: #2a579a;
+}
+
+.portal-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.portal-card h3 {
+  font-size: 16px;
+  color: #2a579a;
+  margin-bottom: 6px;
+}
+
+.portal-card p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.overview-item {
+  margin-bottom: 16px;
+}
+
+.overview-item h4 {
+  color: #548dd4;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.overview-item p {
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.7;
+}
+
+@media (max-width: 860px) {
+  .portal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-content h1 {
+    font-size: 28px;
+  }
+}

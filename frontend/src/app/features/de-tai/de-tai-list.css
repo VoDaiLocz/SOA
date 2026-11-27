@@ -1,0 +1,61 @@
+.page-wrap {
+  padding-top: 28px;
+}
+
+.page-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.create-box {
+  margin-bottom: 20px;
+}
+
+.box-title {
+  color: #2a579a;
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.full-col {
+  grid-column: 1 / -1;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-bar input {
+  flex: 1;
+  min-width: 240px;
+}
+
+.action-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

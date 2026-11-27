@@ -1,0 +1,50 @@
+<div class="container" style="padding-top: 28px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div class="section-header" style="margin-bottom: 0;">
+      <div class="sub">DỮ LIỆU TỔNG HỢP TỪ HỆ THỐNG</div>
+      <h2>THỐNG KÊ &amp; BÁO CÁO KHOA HỌC CÔNG NGHỆ</h2>
+    </div>
+    <a [href]="thongKeService.getExportCsvUrl()" target="_blank" class="btn btn-crimson">
+      📥 Xuất Báo Cáo CSV (Excel)
+    </a>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- Summary KPI -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div class="card">
+      <div style="font-size: 12px; color: #64748b; font-weight: 700;">TỔNG SỐ ĐỀ TÀI</div>
+      <div style="font-size: 30px; font-weight: 700; color: #2a579a;">{{ trangThai?.tongSoDeTai ?? 0 }}</div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #64748b; font-weight: 700;">TỶ LỆ ĐẠT ({{ ketQua?.kyBaoCao || 'Hiện tại' }})</div>
+      <div style="font-size: 30px; font-weight: 700; color: #15803d;">{{ ketQua?.tyLeDatPhanTram ?? 0 }}%</div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #64748b; font-weight: 700;">ĐÚNG TIẾN ĐỘ</div>
+      <div style="font-size: 30px; font-weight: 700; color: #548dd4;">{{ tienDo?.dungTienDo ?? 0 }}</div>
+    </div>
+    <div class="card">
+      <div style="font-size: 12px; color: #64748b; font-weight: 700;">ĐÃ HOÀN THÀNH</div>
+      <div style="font-size: 30px; font-weight: 700; color: #fa7035;">{{ tienDo?.daHoanThanh ?? 0 }}</div>
+    </div>
+  </div>
+
+  <!-- Distribution -->
+  <div class="card" *ngIf="trangThai">
+    <h3 style="color: #2a579a; font-size: 16px; margin-bottom: 16px;">Phân bổ đề tài theo trạng thái</h3>
+    <div *ngFor="let item of statusEntries" style="margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+        <strong>{{ item.key }}</strong>
+        <span>{{ item.val }} đề tài</span>
+      </div>
+      <div style="background: #e2e8f0; border-radius: 6px; height: 10px; overflow: hidden;">
+        <div
+          style="background: #2a579a; height: 100%;"
+          [style.width.%]="trangThai.tongSoDeTai > 0 ? (item.val / trangThai.tongSoDeTai) * 100 : 0"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>

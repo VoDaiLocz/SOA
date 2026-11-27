@@ -1,0 +1,115 @@
+<div class="container page-wrap">
+  <div class="page-top">
+    <div class="section-header" style="margin-bottom: 0;">
+      <div class="sub">QUẢN LÝ ĐỀ TÀI NGHIÊN CỨU KHOA HỌC</div>
+      <h2>DANH MỤC ĐỀ TÀI - DỰ ÁN - SÁNG KIẾN</h2>
+    </div>
+    <button class="btn btn-crimson" (click)="showCreateForm = !showCreateForm">
+      {{ showCreateForm ? 'Đóng biểu mẫu' : '+ Đề xuất đề tài mới' }}
+    </button>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
+
+  <!-- Create Form -->
+  <div class="card create-box" *ngIf="showCreateForm">
+    <h3 class="box-title">Đề xuất / Tạo mới Đề tài NCKH</h3>
+    <form (ngSubmit)="onCreate()" class="grid-2">
+      <div class="form-group">
+        <label>Mã đề tài *</label>
+        <input type="text" class="form-control" [(ngModel)]="newDeTai.maDeTai" name="maDeTai" placeholder="VD: DT05" required />
+      </div>
+      <div class="form-group">
+        <label>Lĩnh vực *</label>
+        <input type="text" class="form-control" [(ngModel)]="newDeTai.linhVuc" name="linhVuc" required />
+      </div>
+      <div class="form-group full-col">
+        <label>Tên đề tài *</label>
+        <input type="text" class="form-control" [(ngModel)]="newDeTai.tenDeTai" name="tenDeTai" required />
+      </div>
+      <div class="form-group full-col">
+        <label>Mô tả đề tài</label>
+        <textarea class="form-control" [(ngModel)]="newDeTai.moTa" name="moTa" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Mã SV chủ nhiệm</label>
+        <input type="text" class="form-control" [(ngModel)]="newDeTai.maSvChuNhiem" name="maSvChuNhiem" placeholder="VD: 4551050001" />
+      </div>
+      <div class="form-group">
+        <label>Mã GVHD</label>
+        <input type="text" class="form-control" [(ngModel)]="newDeTai.maGvhd" name="maGvhd" placeholder="VD: GV01" />
+      </div>
+      <div class="form-group">
+        <label>Tên GVHD</label>
+        <input type="text" class="form-control" [(ngModel)]="newDeTai.tenGvhd" name="tenGvhd" placeholder="VD: TS. Nguyễn Văn Hùng" />
+      </div>
+      <div class="form-group">
+        <label>Kinh phí dự kiến (VNĐ)</label>
+        <input type="number" class="form-control" [(ngModel)]="newDeTai.kinhPhiDuKien" name="kinhPhiDuKien" />
+      </div>
+      <div class="full-col">
+        <button type="submit" class="btn btn-primary">Lưu đề tài</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card filter-bar">
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="searchText"
+      placeholder="Tìm theo mã, tên đề tài, lĩnh vực, GVHD..."
+    />
+    <select class="form-control" [(ngModel)]="filterStatus" (change)="loadDeTai()" style="max-width: 240px;">
+      <option value="">-- Tất cả trạng thái --</option>
+      <option value="CHO_DUYET">Chờ duyệt</option>
+      <option value="DA_DUYET">Đã duyệt</option>
+      <option value="DANG_THUC_HIEN">Đang thực hiện</option>
+      <option value="CHO_NGHIEM_THU">Chờ nghiệm thu</option>
+      <option value="DA_NGHIEM_THU">Đã nghiệm thu</option>
+      <option value="DA_HUY">Đã hủy</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="card table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã</th>
+          <th>Tên Đề Tài</th>
+          <th>Lĩnh Vực</th>
+          <th>GVHD</th>
+          <th>Thành Viên</th>
+          <th>Trạng Thái</th>
+          <th>Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="filteredList.length === 0">
+          <td colspan="7" style="text-align: center; color: #64748b;">Không có đề tài nào phù hợp.</td>
+        </tr>
+        <tr *ngFor="let dt of filteredList">
+          <td><strong>{{ dt.maDeTai }}</strong></td>
+          <td>
+            <div style="font-weight: 600;">{{ dt.tenDeTai }}</div>
+            <div style="font-size: 12px; color: #64748b;">{{ dt.moTa }}</div>
+          </td>
+          <td>{{ dt.linhVuc }}</td>
+          <td>{{ dt.tenGvhd }}</td>
+          <td>{{ dt.soLuongHienTai }} / {{ dt.soLuongToiDa }}</td>
+          <td><span class="badge badge-{{ dt.trangThai }}">{{ dt.trangThai }}</span></td>
+          <td>
+            <div class="action-group">
+              <button class="btn btn-outline btn-sm" (click)="onDangKy(dt.maDeTai)">Đăng ký</button>
+              <button class="btn btn-primary btn-sm" *ngIf="dt.trangThai === 'CHO_DUYET'" (click)="onDuyet(dt.maDeTai)">Duyệt</button>
+              <button class="btn btn-crimson btn-sm" *ngIf="dt.trangThai !== 'DA_HUY'" (click)="onHuy(dt.maDeTai)">Hủy</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

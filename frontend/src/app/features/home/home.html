@@ -1,0 +1,140 @@
+<!-- Hero Banner with real QNU campus photo (csdlkh.qnu.edu.vn/qnu.jpg) -->
+<section class="qnu-hero">
+  <div class="hero-overlay">
+    <div class="container hero-content">
+      <h3>CƠ SỞ DỮ LIỆU</h3>
+      <h1><span>KHOA HỌC</span> VÀ CÔNG NGHỆ</h1>
+      <p class="hero-sub">Cổng thông tin quản lý đề tài Nghiên cứu Khoa học &amp; Đồ án Tốt nghiệp — Trường Đại học Quy Nhơn</p>
+
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <span class="stat-num">{{ thongKe?.tongSoDeTai ?? '—' }}</span>
+          <span class="stat-label">Dữ liệu Đề tài</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">{{ thongKe?.dangThucHien ?? '—' }}</span>
+          <span class="stat-label">Đang thực hiện</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-num">{{ thongKe?.daNghiemThu ?? '—' }}</span>
+          <span class="stat-label">Đã nghiệm thu</span>
+        </div>
+      </div>
+
+      <form class="hero-search" (ngSubmit)="onSearch()">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          name="searchQuery"
+          placeholder="Nhập mã đề tài, tên đề tài, lĩnh vực hoặc giảng viên hướng dẫn..."
+        />
+        <button type="submit" class="btn btn-crimson">Tìm kiếm</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Portal Quick-Access Cards -->
+<section class="container portal-section">
+  <div class="section-header">
+    <div class="sub">PHÂN HỆ CHỨC NĂNG TRỰC TUYẾN</div>
+    <h2>DANH MỤC QUẢN LÝ NGHIÊN CỨU KHOA HỌC</h2>
+  </div>
+
+  <div class="portal-grid">
+    <a routerLink="/de-tai" class="portal-card">
+      <div class="portal-icon">📚</div>
+      <h3>Đề tài - Dự án - Sáng kiến</h3>
+      <p>Tra cứu, đề xuất đề tài mới, đăng ký tham gia nhóm nghiên cứu và theo dõi duyệt đề tài.</p>
+    </a>
+
+    <a routerLink="/giang-vien" class="portal-card">
+      <div class="portal-icon">👨‍🏫</div>
+      <h3>Nhà khoa học &amp; Giảng viên</h3>
+      <p>Danh bạ giảng viên theo Khoa, Bộ môn, học vị và hướng nghiên cứu khoa học.</p>
+    </a>
+
+    <a routerLink="/hoi-dong" class="portal-card">
+      <div class="portal-icon">🏛️</div>
+      <h3>Hội đồng thẩm định &amp; Bảo vệ</h3>
+      <p>Thành lập hội đồng, phân công chủ tịch/phản biện và lịch bảo vệ đề tài.</p>
+    </a>
+
+    <a routerLink="/cham-diem" class="portal-card">
+      <div class="portal-icon">📝</div>
+      <h3>Chấm điểm &amp; Nghiệm thu</h3>
+      <p>Nhập phiếu điểm đề cương/bảo vệ, tổng hợp điểm trung bình và xếp loại tự động.</p>
+    </a>
+
+    <a routerLink="/tai-lieu" class="portal-card">
+      <div class="portal-icon">📁</div>
+      <h3>Biểu mẫu &amp; Tài liệu thuyết minh</h3>
+      <p>Lưu trữ, tải lên và tải về hồ sơ thuyết minh, báo cáo tiến độ và báo cáo tổng kết.</p>
+    </a>
+
+    <a routerLink="/thong-ke" class="portal-card">
+      <div class="portal-icon">📊</div>
+      <h3>Thống kê &amp; Xuất báo cáo</h3>
+      <p>Thống kê tiến độ, tỷ lệ đạt theo Khoa và xuất báo cáo dữ liệu định dạng CSV/Excel.</p>
+    </a>
+  </div>
+</section>
+
+<!-- Recent Topics from detai-service -->
+<section class="container portal-section" *ngIf="recentDeTai.length > 0">
+  <div class="section-header">
+    <div class="sub">DỮ LIỆU CẬP NHẬT TỪ HỆ THỐNG</div>
+    <h2>ĐỀ TÀI NGHIÊN CỨU MỚI NHẤT</h2>
+  </div>
+  <div class="card table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã Đề Tài</th>
+          <th>Tên Đề Tài</th>
+          <th>Lĩnh Vực</th>
+          <th>GVHD</th>
+          <th>Trạng Thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let dt of recentDeTai">
+          <td><strong>{{ dt.maDeTai }}</strong></td>
+          <td>{{ dt.tenDeTai }}</td>
+          <td>{{ dt.linhVuc }}</td>
+          <td>{{ dt.tenGvhd }}</td>
+          <td><span class="badge badge-{{ dt.trangThai }}">{{ dt.trangThai }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- QNU Overview Section (Directly mirroring csdlkh.qnu.edu.vn) -->
+<section class="container portal-section">
+  <div class="card qnu-overview">
+    <div class="section-header">
+      <div class="sub">GIỚI THIỆU TỔNG QUAN VỀ</div>
+      <h2>TRƯỜNG ĐẠI HỌC QUY NHƠN</h2>
+    </div>
+
+    <div class="overview-item">
+      <h4>1. Sứ mệnh</h4>
+      <p>
+        Trường Đại học Quy Nhơn là cơ sở giáo dục đại học đa ngành, đa lĩnh vực có sứ mệnh đào tạo, phát triển nguồn nhân lực chất lượng cao; bồi dưỡng nhân tài; nghiên cứu khoa học, truyền bá tri thức và chuyển giao công nghệ; phục vụ hiệu quả sự phát triển bền vững của đất nước, đặc biệt đối với khu vực Nam Trung Bộ - Tây Nguyên; góp phần thúc đẩy tiến bộ xã hội.
+      </p>
+    </div>
+
+    <div class="overview-item">
+      <h4>2. Tầm nhìn</h4>
+      <p>
+        Đến năm 2030, Trường Đại học Quy Nhơn sẽ là trường đại học đa ngành, đa lĩnh vực định hướng ứng dụng có uy tín cao, đạt tiêu chuẩn chất lượng của khu vực Đông Nam Á; có vị thế quan trọng về hợp tác đào tạo, nghiên cứu, trao đổi học thuật, giao lưu văn hóa trong nước và quốc tế.
+      </p>
+    </div>
+
+    <div class="overview-item">
+      <h4>3. Giá trị cốt lõi</h4>
+      <p>Trách nhiệm - Chuyên nghiệp - Chất lượng - Sáng tạo - Nhân văn</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,67 @@
+<div class="container" style="padding-top: 28px;">
+  <div class="section-header">
+    <div class="sub">KHO LƯU TRỮ HỒ SƠ KHOA HỌC</div>
+    <h2>BIỂU MẪU &amp; TÀI LIỆU THUYẾT MINH</h2>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
+
+  <div class="card" style="margin-bottom: 18px;">
+    <h3 style="color: #2a579a; font-size: 16px; margin-bottom: 12px;">Tải lên Tài liệu / Báo cáo</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>Đề tài</label>
+        <select class="form-control" [(ngModel)]="selectedMaDeTai" (change)="loadFiles()">
+          <option *ngFor="let dt of deTaiList" [value]="dt.maDeTai">{{ dt.maDeTai }} — {{ dt.tenDeTai }}</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>Loại tài liệu</label>
+        <select class="form-control" [(ngModel)]="loaiTaiLieu">
+          <option value="THUYET_MINH">Thuyết minh đề tài</option>
+          <option value="BAO_CAO_TIEN_DO">Báo cáo tiến độ</option>
+          <option value="BAO_CAO_NGHIEM_THU">Báo cáo nghiệm thu</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>Chọn tệp (.pdf, .docx, .zip)</label>
+        <input type="file" class="form-control" (change)="onFileSelected($event)" />
+      </div>
+      <div>
+        <button class="btn btn-crimson" (click)="onUpload()">Upload Tài liệu</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Tên File</th>
+          <th>Loại Tài Liệu</th>
+          <th>Người Upload</th>
+          <th>Kích Thước</th>
+          <th>Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="list.length === 0">
+          <td colspan="5" style="text-align: center; color: #64748b;">Chưa có tài liệu nào cho đề tài này.</td>
+        </tr>
+        <tr *ngFor="let tl of list">
+          <td><strong>{{ tl.tenFile }}</strong></td>
+          <td>{{ tl.loaiTaiLieu }}</td>
+          <td>{{ tl.nguoiUpload }}</td>
+          <td>{{ (tl.kichThuoc / 1024).toFixed(1) }} KB</td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <a [href]="taiLieuService.getDownloadUrl(tl.id)" target="_blank" class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;">Tải về</a>
+              <button class="btn btn-crimson" style="padding: 4px 10px; font-size: 12px;" (click)="onDelete(tl.id)">Xóa</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

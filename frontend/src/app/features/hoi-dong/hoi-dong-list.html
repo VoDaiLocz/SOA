@@ -1,0 +1,91 @@
+<div class="container" style="padding-top: 28px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div class="section-header" style="margin-bottom: 0;">
+      <div class="sub">TỔ CHỨC THẨM ĐỊNH &amp; BẢO VỆ</div>
+      <h2>HỘI ĐỒNG KHOA HỌC</h2>
+    </div>
+    <button class="btn btn-crimson" (click)="showCreate = !showCreate">
+      {{ showCreate ? 'Đóng biểu mẫu' : '+ Thành lập Hội đồng' }}
+    </button>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+  <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
+
+  <div class="card" style="margin-bottom: 18px;" *ngIf="showCreate">
+    <form (ngSubmit)="onCreate()" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+      <div class="form-group"><label>Mã Hội đồng *</label><input class="form-control" [(ngModel)]="createForm.maHoiDong" name="maHd" required /></div>
+      <div class="form-group"><label>Tên Hội đồng *</label><input class="form-control" [(ngModel)]="createForm.tenHoiDong" name="tenHd" required /></div>
+      <div class="form-group">
+        <label>Loại Hội đồng</label>
+        <select class="form-control" [(ngModel)]="createForm.loaiHoiDong" name="loaiHd">
+          <option value="DE_CUONG">Xét duyệt Đề cương</option>
+          <option value="BAO_VE_CHINH_THUC">Bảo vệ chính thức</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Ngày họp</label><input type="date" class="form-control" [(ngModel)]="createForm.ngayHop" name="ngayHop" /></div>
+      <div class="form-group"><label>Địa điểm</label><input class="form-control" [(ngModel)]="createForm.diaDiem" name="diaDiem" /></div>
+      <div style="grid-column: 1 / -1;"><button type="submit" class="btn btn-primary">Tạo Hội đồng</button></div>
+    </form>
+  </div>
+
+  <!-- Quick Assign Forms -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+    <div class="card">
+      <h3 style="color: #2a579a; font-size: 15px; margin-bottom: 12px;">Phân công Giảng viên vào Hội đồng</h3>
+      <form (ngSubmit)="onAssignGv()">
+        <div class="form-group"><label>Mã Hội đồng</label><input class="form-control" [(ngModel)]="gvForm.maHoiDong" name="gvHd" required /></div>
+        <div class="form-group"><label>Mã GV</label><input class="form-control" [(ngModel)]="gvForm.maGv" name="maGv" required /></div>
+        <div class="form-group"><label>Tên GV</label><input class="form-control" [(ngModel)]="gvForm.tenGv" name="tenGv" required /></div>
+        <div class="form-group">
+          <label>Vai trò</label>
+          <select class="form-control" [(ngModel)]="gvForm.vaiTro" name="vaiTro">
+            <option value="CHU_TICH">Chủ tịch</option>
+            <option value="THU_KY">Thư ký</option>
+            <option value="PHAN_BIEN_1">Phản biện 1</option>
+            <option value="PHAN_BIEN_2">Phản biện 2</option>
+            <option value="UY_VIEN">Ủy viên</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Phân công</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3 style="color: #2a579a; font-size: 15px; margin-bottom: 12px;">Gán Đề tài vào Hội đồng</h3>
+      <form (ngSubmit)="onAssignDeTai()">
+        <div class="form-group"><label>Mã Hội đồng</label><input class="form-control" [(ngModel)]="dtForm.maHoiDong" name="dtHd" required /></div>
+        <div class="form-group"><label>Mã Đề tài</label><input class="form-control" [(ngModel)]="dtForm.maDeTai" name="maDeTai" required /></div>
+        <div class="form-group"><label>Tên Đề tài</label><input class="form-control" [(ngModel)]="dtForm.tenDeTai" name="tenDeTai" required /></div>
+        <button type="submit" class="btn btn-primary">Gán đề tài</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div class="card" style="margin-bottom: 14px;" *ngFor="let hd of list">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div>
+        <h3 style="color: #2a579a;">{{ hd.maHoiDong }} — {{ hd.tenHoiDong }}</h3>
+        <div style="font-size: 13px; color: #64748b;">
+          Loại: {{ hd.loaiHoiDong }} | Ngày họp: {{ hd.ngayHop || 'Chưa ấn định' }} | Phòng: {{ hd.diaDiem }}
+        </div>
+      </div>
+      <span class="badge badge-DA_DUYET">{{ hd.trangThai }}</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 13px;">
+      <div>
+        <strong>Thành viên Hội đồng ({{ hd.thanhVienList.length || 0 }}):</strong>
+        <ul style="margin-top: 6px; padding-left: 18px;">
+          <li *ngFor="let tv of hd.thanhVienList">{{ tv.tenGv }} ({{ tv.maGv }}) — <strong>{{ tv.vaiTro }}</strong></li>
+        </ul>
+      </div>
+      <div>
+        <strong>Đề tài bảo vệ ({{ hd.deTaiList.length || 0 }}):</strong>
+        <ul style="margin-top: 6px; padding-left: 18px;">
+          <li *ngFor="let dt of hd.deTaiList"><strong>{{ dt.maDeTai }}</strong>: {{ dt.tenDeTai }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
