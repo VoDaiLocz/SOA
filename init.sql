@@ -19,14 +19,14 @@ CREATE TABLE IF NOT EXISTS tai_khoan (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Mật khẩu mặc định: admin123 / 123456 (BCrypt)
+-- Mật khẩu mặc định: 123456 (BCrypt)
 INSERT INTO tai_khoan (ten_dang_nhap, mat_khau, ho_ten, email, vai_tro, ma_dinh_danh) VALUES
-('admin', '$2a$10$7Z8lqYlO9z.1o.g1V6U36.G5Dk2Z1jK9f7VlT1w9P6W8G7F5D4C3B', 'Quản trị viên Hệ thống', 'admin@qnu.edu.vn', 'ADMIN', 'ADMIN01'),
-('quanly', '$2a$10$7Z8lqYlO9z.1o.g1V6U36.G5Dk2Z1jK9f7VlT1w9P6W8G7F5D4C3B', 'Cán bộ Quản lý NCKH', 'qlkh@qnu.edu.vn', 'QUAN_LY', 'QL01'),
-('gv_hung', '$2a$10$7Z8lqYlO9z.1o.g1V6U36.G5Dk2Z1jK9f7VlT1w9P6W8G7F5D4C3B', 'TS. Nguyễn Văn Hùng', 'nvhung@qnu.edu.vn', 'GIANG_VIEN', 'GV001'),
-('gv_lan', '$2a$10$7Z8lqYlO9z.1o.g1V6U36.G5Dk2Z1jK9f7VlT1w9P6W8G7F5D4C3B', 'PGS.TS. Trần Thị Lan', 'ttlan@qnu.edu.vn', 'GIANG_VIEN', 'GV002'),
-('sv_loc', '$2a$10$7Z8lqYlO9z.1o.g1V6U36.G5Dk2Z1jK9f7VlT1w9P6W8G7F5D4C3B', 'Võ Đại Lộc', 'vodailoc@gmail.com', 'SINH_VIEN', 'SV001'),
-('sv_khoa', '$2a$10$7Z8lqYlO9z.1o.g1V6U36.G5Dk2Z1jK9f7VlT1w9P6W8G7F5D4C3B', 'Quách Duy Khoa', 'khoa@gmail.com', 'SINH_VIEN', 'SV002')
+('admin', '$2a$12$fDNsgNBLY4cX1i3WJPbdu.2psJHglcm0mcB6fyaIDS1v99nukBOfm', 'Quản trị viên Hệ thống', 'admin@qnu.edu.vn', 'ADMIN', 'ADMIN01'),
+('quanly', '$2a$12$fDNsgNBLY4cX1i3WJPbdu.2psJHglcm0mcB6fyaIDS1v99nukBOfm', 'Cán bộ Quản lý NCKH', 'qlkh@qnu.edu.vn', 'QUAN_LY', 'QL01'),
+('gv_hung', '$2a$12$fDNsgNBLY4cX1i3WJPbdu.2psJHglcm0mcB6fyaIDS1v99nukBOfm', 'TS. Nguyễn Văn Hùng', 'nvhung@qnu.edu.vn', 'GIANG_VIEN', 'GV001'),
+('gv_lan', '$2a$12$fDNsgNBLY4cX1i3WJPbdu.2psJHglcm0mcB6fyaIDS1v99nukBOfm', 'PGS.TS. Trần Thị Lan', 'ttlan@qnu.edu.vn', 'GIANG_VIEN', 'GV002'),
+('sv_loc', '$2a$12$fDNsgNBLY4cX1i3WJPbdu.2psJHglcm0mcB6fyaIDS1v99nukBOfm', 'Võ Đại Lộc', 'vodailoc@gmail.com', 'SINH_VIEN', 'SV001'),
+('sv_khoa', '$2a$12$fDNsgNBLY4cX1i3WJPbdu.2psJHglcm0mcB6fyaIDS1v99nukBOfm', 'Quách Duy Khoa', 'khoa@gmail.com', 'SINH_VIEN', 'SV002')
 ON DUPLICATE KEY UPDATE id=id;
 
 -- 2. USER SERVICE DATABASE
