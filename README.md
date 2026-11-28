@@ -100,31 +100,44 @@ Xây dựng theo chuẩn Angular 17 không dùng `NgModule`:
 ### Yêu Cầu Môi Trường:
 * Docker & Docker Compose (hoặc JDK 21 + Maven cho Backend, Node.js 18+ cho Frontend).
 
-### 5.1. Chạy Backend bằng Docker Compose
+### 5.1. Khởi chạy toàn bộ hệ thống bằng Docker Compose
 ```bash
-cd /home/vodailoc/SOA
-docker compose up -d --build
-```
-Kiểm tra trạng thái: `docker compose ps`. Gateway chạy tại `http://localhost:8080`.
+# 1. Đóng gói mã nguồn Backend thành các file JAR
+mvn clean package -DskipTests
 
-### 5.2. Chạy Backend thủ công (Maven)
-```bash
-mvn clean test-compile -DskipTests
-# Chạy từng service:
-cd backend/api-gateway && mvn spring-boot:run
-```
+# 2. Khởi chạy toàn bộ 10 containers (MySQL + Gateway + 8 Microservices)
+docker compose up -d
 
-### 5.3. Chạy Frontend (Angular)
+# 3. Kiểm tra trạng thái các container
+docker compose ps
+```
+- **API Gateway:** `http://localhost:8080`
+- **Database MySQL:** `localhost:3307` (user: `root`, pass: `root`)
+
+### 5.2. Khởi chạy Frontend (Angular)
 ```bash
-cd /home/vodailoc/SOA/frontend
+cd frontend
 npm install
 npm start
 ```
-Truy cập: `http://localhost:4200`.
+- **Cổng thông tin NCKH Frontend:** `http://localhost:4200`
 
 ---
 
-## 6. Các API Endpoints Chính (Qua Gateway :8080)
+## 6. Danh Sách Tài Khoản Mẫu (Mật khẩu mặc định: `123456`)
+
+| Vai trò | Tên đăng nhập | Email liên kết | Mã định danh | Mô tả |
+| :--- | :--- | :--- | :--- | :--- |
+| **Quản trị viên** | `admin` | `admin@qnu.edu.vn` | `ADMIN01` | Toàn quyền quản trị hệ thống |
+| **Cán bộ Quản lý** | `quanly` | `qlkh@qnu.edu.vn` | `QL01` | Quản lý đề tài cấp khoa/trường, thành lập hội đồng |
+| **Giảng viên** | `gv_hung` | `nvhung@qnu.edu.vn` | `GV001` | Hướng dẫn đề tài, ủy viên/chủ tịch hội đồng |
+| **Giảng viên** | `gv_lan` | `ttlan@qnu.edu.vn` | `GV002` | Hướng dẫn đề tài, phản biện hội đồng |
+| **Sinh viên** | `sv_loc` | `vodailoc@gmail.com` | `SV001` | Đăng ký đề tài, nộp báo cáo |
+| **Sinh viên** | `sv_khoa` | `khoa@gmail.com` | `SV002` | Đăng ký đề tài nhóm |
+
+---
+
+## 7. Các API Endpoints Chính (Qua Gateway :8080)
 
 | Chức Năng | Method | Endpoint | Service Xử Lý |
 | :--- | :---: | :--- | :---: |

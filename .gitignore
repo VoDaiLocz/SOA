@@ -26,6 +26,7 @@ HELP.md
 *.log
 *.tmp
 .DS_Store
+.playwright-mcp/
 
 # Documents
 *.doc

@@ -145,12 +145,14 @@ public class AuthService implements IAuthService {
         tk.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
         taiKhoanRepository.save(tk);
 
+        boolean hasSmtpConfig = emailService.hasSmtpConfig();
         emailService.sendPasswordResetOtpEmail(email, tk.getHoTen(), otp);
 
-        return new QuenMatKhauResponse(
-                email,
-                "Mã xác nhận (OTP) có hiệu lực 15 phút đã được gửi tới email " + email
-        );
+        String thongBao = hasSmtpConfig
+                ? "Mã xác nhận (OTP) có hiệu lực 15 phút đã được gửi tới email " + email
+                : "Mã OTP xác nhận (chế độ Test): [" + otp + "] - Hãy cấu hình Gmail SMTP trong docker-compose để gửi email thật tới " + email;
+
+        return new QuenMatKhauResponse(email, thongBao);
     }
 
     @Override

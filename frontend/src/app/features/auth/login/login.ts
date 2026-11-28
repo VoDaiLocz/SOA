@@ -93,7 +93,14 @@ export class LoginComponent {
       next: (res) => {
         this.loading = false;
         this.forgotStep = 2;
-        this.successMsg = res?.message || 'Mã xác thực OTP đã được gửi về email của bạn!';
+        const msg = res?.data?.thongBao || res?.message || 'Mã xác thực OTP đã được gửi về email của bạn!';
+        this.successMsg = msg;
+
+        // Nếu thông báo chứa mã OTP test trong ngoặc vuông [123456], tự động điền sẵn
+        const match = msg.match(/\[(\d{6})\]/);
+        if (match && match[1]) {
+          this.forgotForm.otp = match[1];
+        }
       },
       error: (err) => {
         this.loading = false;

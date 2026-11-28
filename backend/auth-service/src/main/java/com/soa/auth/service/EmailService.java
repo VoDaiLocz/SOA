@@ -22,6 +22,10 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    public boolean hasSmtpConfig() {
+        return mailSender != null && smtpUsername != null && !smtpUsername.isBlank();
+    }
+
     public void sendPasswordResetOtpEmail(String toEmail, String hoTen, String otp) {
         if (mailSender == null || smtpUsername == null || smtpUsername.isBlank()) {
             log.warn("==================================================================");
