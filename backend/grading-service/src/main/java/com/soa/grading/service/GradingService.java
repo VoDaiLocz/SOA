@@ -42,11 +42,15 @@ public class GradingService implements IGradingService {
     @Transactional
     public DiemDTO nhapDiem(NhapDiemRequest req) {
         validateScore(req.getDiemSo());
+        String loaiDiem = req.getLoaiDiem() != null ? req.getLoaiDiem() : "DE_CUONG";
+        if (diemRepository.existsByMaDeTaiAndMaGvAndLoaiDiem(req.getMaDeTai(), req.getMaGv(), loaiDiem)) {
+            throw new IllegalArgumentException("Giảng viên " + req.getMaGv() + " đã chấm điểm " + loaiDiem + " cho đề tài " + req.getMaDeTai());
+        }
         Diem d = new Diem(
                 req.getMaDeTai(),
                 req.getMaGv(),
                 req.getTenGv(),
-                req.getLoaiDiem() != null ? req.getLoaiDiem() : "DE_CUONG",
+                loaiDiem,
                 req.getDiemSo(),
                 req.getNhanXet()
         );

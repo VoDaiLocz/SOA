@@ -12,4 +12,5 @@ public interface DangKyRepository extends JpaRepository<DangKy, Long> {
     List<DangKy> findByMaSv(String maSv);
     boolean existsByMaSvAndMaDeTai(String maSv, String maDeTai);
     Optional<DangKy> findByMaSvAndMaDeTai(String maSv, String maDeTai);
+    void deleteByMaDeTai(String maDeTai);
 }

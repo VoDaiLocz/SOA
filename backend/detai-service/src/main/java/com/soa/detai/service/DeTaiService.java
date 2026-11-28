@@ -16,12 +16,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class DeTaiService implements IDeTaiService {
 
     private static final Logger log = LoggerFactory.getLogger(DeTaiService.class);
+    private static final Set<String> OPEN_FOR_REGISTRATION = Set.of("CHO_DUYET", "DA_DUYET", "DANG_THUC_HIEN");
 
     private final DeTaiRepository deTaiRepository;
     private final DangKyRepository dangKyRepository;
@@ -39,6 +41,26 @@ public class DeTaiService implements IDeTaiService {
                 dt.getTrangThai(), dt.getNgayTao());
     }
 
+    private DeTai findDeTaiOrThrow(String maDeTai) {
+        return deTaiRepository.findByMaDeTai(maDeTai)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + maDeTai));
+    }
+
+    private void verifyActiveStudent(String maSv) {
+        try {
+            ApiResponse<SinhVienClientDTO> svRes = userClient.getSinhVienByMa(maSv);
+            if (svRes == null || svRes.getData() == null || !"DANG_HOC".equals(svRes.getData().getTrangThai())) {
+                throw new IllegalArgumentException("Sinh viên không hợp lệ hoặc đã bị khóa");
+            }
+        } catch (feign.FeignException.NotFound e) {
+            throw new IllegalArgumentException("Không tìm thấy sinh viên trong hệ thống: " + maSv);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException("Không thể kết nối đến user-service để xác thực sinh viên: " + e.getMessage());
+        }
+    }
+
     @Override
     @Cacheable(value = "danhSachDeTai", key = "#trangThai != null ? #trangThai : 'ALL'")
     public List<DeTaiDTO> getAllDeTai(String trangThai) {
@@ -51,9 +73,7 @@ public class DeTaiService implements IDeTaiService {
 
     @Override
     public DeTaiDTO getDeTaiByMa(String maDeTai) {
-        return deTaiRepository.findByMaDeTai(maDeTai)
-                .map(this::toDto)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài mã: " + maDeTai));
+        return toDto(findDeTaiOrThrow(maDeTai));
     }
 
     @Override
@@ -63,26 +83,38 @@ public class DeTaiService implements IDeTaiService {
         if (deTaiRepository.existsByMaDeTai(req.getMaDeTai())) {
             throw new IllegalArgumentException("Mã đề tài đã tồn tại: " + req.getMaDeTai());
         }
+        int maxMembers = req.getSoLuongToiDa() != null ? req.getSoLuongToiDa() : 3;
+        if (maxMembers < 1) {
+            throw new IllegalArgumentException("Số lượng thành viên tối đa phải lớn hơn 0");
+        }
+        double budget = req.getKinhPhiDuKien() != null ? req.getKinhPhiDuKien() : 15000000.0;
+        if (budget < 0) {
+            throw new IllegalArgumentException("Kinh phí dự kiến không được âm");
+        }
+
+        if (req.getMaSvChuNhiem() != null && !req.getMaSvChuNhiem().isBlank()) {
+            verifyActiveStudent(req.getMaSvChuNhiem().trim());
+        }
 
         DeTai dt = new DeTai();
         dt.setMaDeTai(req.getMaDeTai());
         dt.setTenDeTai(req.getTenDeTai());
         dt.setMoTa(req.getMoTa());
         dt.setLinhVuc(req.getLinhVuc());
-        dt.setKinhPhiDuKien(req.getKinhPhiDuKien() != null ? req.getKinhPhiDuKien() : 15000000.0);
+        dt.setKinhPhiDuKien(budget);
         dt.setMaSvChuNhiem(req.getMaSvChuNhiem());
         dt.setMaGvhd(req.getMaGvhd());
         dt.setTenGvhd(req.getTenGvhd());
         dt.setSoLuongHienTai(1);
-        dt.setSoLuongToiDa(req.getSoLuongToiDa() != null ? req.getSoLuongToiDa() : 3);
+        dt.setSoLuongToiDa(maxMembers);
         dt.setTrangThai("CHO_DUYET");
 
         DeTai saved = deTaiRepository.save(dt);
 
-        if (req.getMaSvChuNhiem() != null && !req.getMaSvChuNhiem().isEmpty()) {
+        if (req.getMaSvChuNhiem() != null && !req.getMaSvChuNhiem().isBlank()) {
             DangKy dk = new DangKy();
             dk.setMaDeTai(saved.getMaDeTai());
-            dk.setMaSv(req.getMaSvChuNhiem());
+            dk.setMaSv(req.getMaSvChuNhiem().trim());
             dk.setVaiTroThanhVien("CHU_NHIEM");
             dk.setTrangThai("XAC_NHAN");
             dangKyRepository.save(dk);
@@ -95,9 +127,7 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public DeTaiDTO updateDeTai(String maDeTai, TaoDeTaiRequest req) {
-        DeTai dt = deTaiRepository.findByMaDeTai(maDeTai)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + maDeTai));
-
+        DeTai dt = findDeTaiOrThrow(maDeTai);
         if (!"CHO_DUYET".equals(dt.getTrangThai())) {
             throw new IllegalStateException("Chỉ được sửa đề tài khi đang ở trạng thái 'CHO_DUYET'");
         }
@@ -114,8 +144,8 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public void deleteDeTai(String maDeTai) {
-        DeTai dt = deTaiRepository.findByMaDeTai(maDeTai)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + maDeTai));
+        DeTai dt = findDeTaiOrThrow(maDeTai);
+        dangKyRepository.deleteByMaDeTai(maDeTai);
         deTaiRepository.delete(dt);
     }
 
@@ -123,8 +153,10 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public DeTaiDTO duyetDeTai(String maDeTai) {
-        DeTai dt = deTaiRepository.findByMaDeTai(maDeTai)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + maDeTai));
+        DeTai dt = findDeTaiOrThrow(maDeTai);
+        if (!"CHO_DUYET".equals(dt.getTrangThai())) {
+            throw new IllegalStateException("Chỉ có thể duyệt đề tài đang ở trạng thái CHO_DUYET");
+        }
         dt.setTrangThai("DA_DUYET");
         return toDto(deTaiRepository.save(dt));
     }
@@ -133,8 +165,10 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public DeTaiDTO huyDeTai(String maDeTai) {
-        DeTai dt = deTaiRepository.findByMaDeTai(maDeTai)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + maDeTai));
+        DeTai dt = findDeTaiOrThrow(maDeTai);
+        if ("DA_NGHIEM_THU".equals(dt.getTrangThai()) || "DA_HUY".equals(dt.getTrangThai())) {
+            throw new IllegalStateException("Không thể hủy đề tài đã nghiệm thu hoặc đã hủy");
+        }
         dt.setTrangThai("DA_HUY");
         return toDto(deTaiRepository.save(dt));
     }
@@ -143,8 +177,10 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public DeTaiDTO giaHanDeTai(String maDeTai) {
-        DeTai dt = deTaiRepository.findByMaDeTai(maDeTai)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + maDeTai));
+        DeTai dt = findDeTaiOrThrow(maDeTai);
+        if (!"DA_DUYET".equals(dt.getTrangThai()) && !"DANG_THUC_HIEN".equals(dt.getTrangThai())) {
+            throw new IllegalStateException("Chỉ có thể gia hạn đề tài đang triển khai hoặc đã duyệt");
+        }
         dt.setTrangThai("DANG_THUC_HIEN");
         return toDto(deTaiRepository.save(dt));
     }
@@ -153,29 +189,19 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public DangKyDTO dangKyDeTai(DangKyRequest req) {
-        DeTai dt = deTaiRepository.findByMaDeTai(req.getMaDeTai())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đề tài: " + req.getMaDeTai()));
+        DeTai dt = findDeTaiOrThrow(req.getMaDeTai());
 
+        if (!OPEN_FOR_REGISTRATION.contains(dt.getTrangThai())) {
+            throw new IllegalStateException("Đề tài hiện không mở đăng ký (trạng thái: " + dt.getTrangThai() + ")");
+        }
         if (dt.getSoLuongHienTai() >= dt.getSoLuongToiDa()) {
             throw new IllegalStateException("Đề tài đã đủ số lượng thành viên tối đa");
         }
-
         if (dangKyRepository.existsByMaSvAndMaDeTai(req.getMaSv(), req.getMaDeTai())) {
             throw new IllegalStateException("Sinh viên đã đăng ký tham gia đề tài này rồi");
         }
 
-        try {
-            ApiResponse<SinhVienClientDTO> svRes = userClient.getSinhVienByMa(req.getMaSv());
-            if (svRes == null || svRes.getData() == null || !"DANG_HOC".equals(svRes.getData().getTrangThai())) {
-                throw new IllegalArgumentException("Sinh viên không hợp lệ hoặc đã bị khóa");
-            }
-        } catch (feign.FeignException.NotFound e) {
-            throw new IllegalArgumentException("Không tìm thấy sinh viên trong hệ thống: " + req.getMaSv());
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IllegalStateException("Không thể kết nối đến user-service để xác thực sinh viên: " + e.getMessage());
-        }
+        verifyActiveStudent(req.getMaSv());
 
         DangKy dk = new DangKy();
         dk.setMaDeTai(req.getMaDeTai());
@@ -207,6 +233,9 @@ public class DeTaiService implements IDeTaiService {
 
         if ("SINH_VIEN".equals(authRole) && authMaSv != null && !authMaSv.isBlank() && !authMaSv.equals(dk.getMaSv())) {
             throw new SecurityException("Không được phép hủy đăng ký của sinh viên khác");
+        }
+        if ("CHU_NHIEM".equals(dk.getVaiTroThanhVien())) {
+            throw new IllegalStateException("Chủ nhiệm đề tài không thể tự rút đăng ký; hãy hủy hoặc chuyển nhượng đề tài");
         }
 
         deTaiRepository.findByMaDeTai(dk.getMaDeTai()).ifPresent(dt -> {

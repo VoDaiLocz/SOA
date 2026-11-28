@@ -99,6 +99,9 @@ public class CouncilService implements ICouncilService {
         if (!hoiDongRepository.existsByMaHoiDong(maHoiDong)) {
             throw new IllegalArgumentException("Hội đồng không tồn tại: " + maHoiDong);
         }
+        if (thanhVienHoiDongRepository.existsByMaHoiDongAndMaGv(maHoiDong, req.getMaGv())) {
+            throw new IllegalArgumentException("Giảng viên " + req.getMaGv() + " đã thuộc hội đồng " + maHoiDong);
+        }
 
         ThanhVienHoiDong tv = new ThanhVienHoiDong();
         tv.setMaHoiDong(maHoiDong);
@@ -115,6 +118,9 @@ public class CouncilService implements ICouncilService {
     public PhanCongDeTaiDTO ganDeTai(String maHoiDong, GanDeTaiRequest req) {
         if (!hoiDongRepository.existsByMaHoiDong(maHoiDong)) {
             throw new IllegalArgumentException("Hội đồng không tồn tại: " + maHoiDong);
+        }
+        if (phanCongDeTaiRepository.existsByMaHoiDongAndMaDeTai(maHoiDong, req.getMaDeTai())) {
+            throw new IllegalArgumentException("Đề tài " + req.getMaDeTai() + " đã được gán cho hội đồng " + maHoiDong);
         }
 
         PhanCongDeTai pc = new PhanCongDeTai();

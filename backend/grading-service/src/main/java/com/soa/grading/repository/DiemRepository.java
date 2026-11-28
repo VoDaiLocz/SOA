@@ -9,4 +9,5 @@ import java.util.List;
 public interface DiemRepository extends JpaRepository<Diem, Long> {
     List<Diem> findByMaDeTai(String maDeTai);
     List<Diem> findByMaGv(String maGv);
+    boolean existsByMaDeTaiAndMaGvAndLoaiDiem(String maDeTai, String maGv, String loaiDiem);
 }

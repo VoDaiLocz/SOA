@@ -1,10 +1,13 @@
 package com.soa.auth.service;
 
+import com.soa.auth.client.UserClient;
+import com.soa.auth.client.UserClient.SinhVienSyncDTO;
 import com.soa.auth.dto.AuthDTOs.*;
 import com.soa.auth.entity.TaiKhoan;
 import com.soa.auth.repository.TaiKhoanRepository;
 import com.soa.auth.security.JwtService;
 import com.soa.auth.service.interfaces.IAuthService;
+import feign.FeignException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +22,18 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final UserClient userClient;
 
-    public AuthService(TaiKhoanRepository taiKhoanRepository, PasswordEncoder passwordEncoder, JwtService jwtService, EmailService emailService) {
+    public AuthService(TaiKhoanRepository taiKhoanRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService,
+                       EmailService emailService,
+                       UserClient userClient) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.emailService = emailService;
+        this.userClient = userClient;
     }
 
     @Override
@@ -37,31 +46,64 @@ public class AuthService implements IAuthService {
         }
 
         String token = jwtService.generateToken(tk.getTenDangNhap(), tk.getVaiTro(), tk.getHoTen(), tk.getMaDinhDanh());
-
         return new AuthResponse(token, "Bearer", tk.getTenDangNhap(), tk.getHoTen(), tk.getVaiTro(), tk.getMaDinhDanh(), 3600);
     }
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (taiKhoanRepository.existsByTenDangNhap(request.getTenDangNhap())) {
+        validateRegisterRequest(request);
+
+        String maSv = request.getMaSinhVien().trim();
+        String email = request.getEmail().trim();
+
+        if (taiKhoanRepository.existsByTenDangNhap(request.getTenDangNhap().trim())) {
             throw new IllegalArgumentException("Tên đăng nhập đã tồn tại trong hệ thống");
         }
+        if (taiKhoanRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email đã được sử dụng bởi tài khoản khác");
+        }
+        if (taiKhoanRepository.existsByMaDinhDanh(maSv)) {
+            throw new IllegalArgumentException("Mã sinh viên này đã có tài khoản trong hệ thống");
+        }
+
+        ensureStudentProfileExists(maSv, request.getHoTen().trim(), email);
 
         TaiKhoan tk = new TaiKhoan();
-        tk.setTenDangNhap(request.getTenDangNhap());
+        tk.setTenDangNhap(request.getTenDangNhap().trim());
         tk.setMatKhau(passwordEncoder.encode(request.getMatKhau()));
-        tk.setHoTen(request.getHoTen());
-        tk.setEmail(request.getEmail());
+        tk.setHoTen(request.getHoTen().trim());
+        tk.setEmail(email);
         tk.setVaiTro("SINH_VIEN");
-        tk.setMaDinhDanh(request.getMaSinhVien());
+        tk.setMaDinhDanh(maSv);
         tk.setTrangThai("HOAT_DONG");
 
         taiKhoanRepository.save(tk);
 
         String token = jwtService.generateToken(tk.getTenDangNhap(), tk.getVaiTro(), tk.getHoTen(), tk.getMaDinhDanh());
-
         return new AuthResponse(token, "Bearer", tk.getTenDangNhap(), tk.getHoTen(), tk.getVaiTro(), tk.getMaDinhDanh(), 3600);
+    }
+
+    private void validateRegisterRequest(RegisterRequest req) {
+        if (req == null || isBlank(req.getTenDangNhap()) || isBlank(req.getMatKhau())
+                || isBlank(req.getHoTen()) || isBlank(req.getEmail()) || isBlank(req.getMaSinhVien())) {
+            throw new IllegalArgumentException("Vui lòng nhập đầy đủ tên đăng nhập, mật khẩu, họ tên, email và mã sinh viên");
+        }
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private void ensureStudentProfileExists(String maSv, String hoTen, String email) {
+        try {
+            userClient.getSinhVienByMa(maSv);
+        } catch (FeignException.NotFound e) {
+            // Tự động đồng bộ tạo mới hồ sơ sinh viên bên user-service nếu chưa có
+            userClient.createSinhVien(new SinhVienSyncDTO(maSv, hoTen, email, "DANG_HOC"));
+        } catch (Exception e) {
+            throw new IllegalStateException("Không thể đồng bộ hồ sơ sinh viên với user-service: " + e.getMessage());
+        }
     }
 
     @Override
@@ -89,7 +131,6 @@ public class AuthService implements IAuthService {
         TaiKhoan tk = taiKhoanRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản liên kết với email: " + email));
 
-        // Sinh mã OTP 6 chữ số có thời hạn 15 phút (không ghi đè mật khẩu trước khi xác thực OTP)
         String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
         tk.setResetOtp(otp);
         tk.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
@@ -127,5 +168,4 @@ public class AuthService implements IAuthService {
         tk.setResetOtpExpiry(null);
         taiKhoanRepository.save(tk);
     }
-
 }

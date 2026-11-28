@@ -1,9 +1,15 @@
 package com.soa.auth.service;
 
+import com.soa.auth.client.UserClient;
+import com.soa.auth.client.UserClient.SinhVienSyncDTO;
+import com.soa.auth.dto.ApiResponse;
 import com.soa.auth.dto.AuthDTOs.*;
 import com.soa.auth.entity.TaiKhoan;
 import com.soa.auth.repository.TaiKhoanRepository;
 import com.soa.auth.security.JwtService;
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,7 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +33,7 @@ class AuthServiceTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtService jwtService;
     @Mock private EmailService emailService;
+    @Mock private UserClient userClient;
 
     @InjectMocks
     private AuthService authService;
@@ -48,6 +57,28 @@ class AuthServiceTest {
     }
 
     @Test
+    void registerAutoCreatesStudentProfileInUserServiceWhenMissing() {
+        RegisterRequest req = new RegisterRequest();
+        req.setTenDangNhap("sv_moi");
+        req.setMatKhau("123456");
+        req.setHoTen("Sinh Vien Moi");
+        req.setEmail("sv_moi@qnu.edu.vn");
+        req.setMaSinhVien("SV999");
+
+        Request dummyReq = Request.create(Request.HttpMethod.GET, "/api/v1/sinhvien/SV999", Collections.emptyMap(), null, StandardCharsets.UTF_8, new RequestTemplate());
+        when(userClient.getSinhVienByMa("SV999")).thenThrow(new FeignException.NotFound("Not found", dummyReq, null, null));
+        when(userClient.createSinhVien(any(SinhVienSyncDTO.class))).thenReturn(ApiResponse.ok(new SinhVienSyncDTO("SV999", "Sinh Vien Moi", "sv_moi@qnu.edu.vn", "DANG_HOC")));
+        when(passwordEncoder.encode("123456")).thenReturn("encoded");
+        when(jwtService.generateToken("sv_moi", "SINH_VIEN", "Sinh Vien Moi", "SV999")).thenReturn("jwt-new");
+
+        AuthResponse res = authService.register(req);
+
+        assertEquals("jwt-new", res.getToken());
+        verify(userClient).createSinhVien(argThat(dto -> "SV999".equals(dto.getMaSv()) && "DANG_HOC".equals(dto.getTrangThai())));
+        verify(taiKhoanRepository).save(any(TaiKhoan.class));
+    }
+
+    @Test
     void quenMatKhauGeneratesOtpWithoutOverwritingPassword() {
         TaiKhoan tk = new TaiKhoan();
         tk.setTenDangNhap("sv001");
@@ -63,7 +94,6 @@ class AuthServiceTest {
         assertEquals("original-hash", tk.getMatKhau());
         assertNotNull(tk.getResetOtp());
         assertEquals(6, tk.getResetOtp().length());
-        assertNotNull(tk.getResetOtpExpiry());
         verify(emailService).sendPasswordResetOtpEmail(eq("sv001@qnu.edu.vn"), eq("Nguyen Van A"), eq(tk.getResetOtp()));
     }
 

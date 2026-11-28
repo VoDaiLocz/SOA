@@ -9,4 +9,5 @@ import java.util.List;
 public interface PhanCongDeTaiRepository extends JpaRepository<PhanCongDeTai, Long> {
     List<PhanCongDeTai> findByMaHoiDong(String maHoiDong);
     List<PhanCongDeTai> findByMaHoiDongIn(List<String> maHoiDongs);
+    boolean existsByMaHoiDongAndMaDeTai(String maHoiDong, String maDeTai);
 }

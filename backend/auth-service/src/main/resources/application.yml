@@ -36,3 +36,5 @@ app:
   jwt:
     secret: ${JWT_SECRET:U09BX0pXVF9TZWNyZXRfU09BX0RvQW5fMjAyNl9Tb2FfVG9UbmdOb2doaXBfU2VjcmV0}
     expiration-ms: 3600000 # 1 giờ
+  services:
+    user-url: ${USER_SERVICE_URL:http://localhost:8081}
