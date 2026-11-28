@@ -195,8 +195,19 @@ public class DeTaiService implements IDeTaiService {
     @Transactional
     @CacheEvict(value = "danhSachDeTai", allEntries = true)
     public void huyDangKy(Long id) {
+        huyDangKy(id, null, null);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "danhSachDeTai", allEntries = true)
+    public void huyDangKy(Long id, String authRole, String authMaSv) {
         DangKy dk = dangKyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lượt đăng ký: " + id));
+
+        if ("SINH_VIEN".equals(authRole) && authMaSv != null && !authMaSv.isBlank() && !authMaSv.equals(dk.getMaSv())) {
+            throw new SecurityException("Không được phép hủy đăng ký của sinh viên khác");
+        }
 
         deTaiRepository.findByMaDeTai(dk.getMaDeTai()).ifPresent(dt -> {
             if (dt.getSoLuongHienTai() > 1) {

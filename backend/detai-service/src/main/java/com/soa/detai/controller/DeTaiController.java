@@ -89,7 +89,14 @@ public class DeTaiController {
     }
 
     @PostMapping("/dang-ky")
-    public ResponseEntity<ApiResponse<DangKyDTO>> dangKyDeTai(@RequestBody DangKyRequest req) {
+    public ResponseEntity<ApiResponse<DangKyDTO>> dangKyDeTai(
+            @RequestBody DangKyRequest req,
+            @RequestHeader(value = "X-Auth-Role", required = false) String authRole,
+            @RequestHeader(value = "X-Auth-MaDinhDanh", required = false) String authMaSv) {
+        if ("SINH_VIEN".equals(authRole) && authMaSv != null && !authMaSv.isBlank() && !authMaSv.equals(req.getMaSv())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Không được phép đăng ký thay cho sinh viên khác"));
+        }
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đăng ký giữ chỗ thành công", deTaiService.dangKyDeTai(req)));
         } catch (Exception e) {
@@ -98,10 +105,15 @@ public class DeTaiController {
     }
 
     @DeleteMapping("/dang-ky/{id}")
-    public ResponseEntity<ApiResponse<Void>> huyDangKy(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> huyDangKy(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-Auth-Role", required = false) String authRole,
+            @RequestHeader(value = "X-Auth-MaDinhDanh", required = false) String authMaSv) {
         try {
-            deTaiService.huyDangKy(id);
+            deTaiService.huyDangKy(id, authRole, authMaSv);
             return ResponseEntity.ok(ApiResponse.ok("Hủy đăng ký thành công", null));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }

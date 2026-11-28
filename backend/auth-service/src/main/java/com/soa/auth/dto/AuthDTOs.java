@@ -104,4 +104,33 @@ public class AuthDTOs {
         public void setMatKhauMoi(String matKhauMoi) { this.matKhauMoi = matKhauMoi; }
     }
 
+    public static class QuenMatKhauRequest {
+        private String email;
+
+        public QuenMatKhauRequest() {}
+        public QuenMatKhauRequest(String email) {
+            this.email = email;
+        }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    public static class QuenMatKhauResponse {
+        private String email;
+        private String thongBao;
+
+        public QuenMatKhauResponse() {}
+        public QuenMatKhauResponse(String email, String thongBao) {
+            this.email = email;
+            this.thongBao = thongBao;
+        }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getThongBao() { return thongBao; }
+        public void setThongBao(String thongBao) { this.thongBao = thongBao; }
+    }
+
 }

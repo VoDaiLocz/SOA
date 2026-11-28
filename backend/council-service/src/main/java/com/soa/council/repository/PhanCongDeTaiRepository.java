@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface PhanCongDeTaiRepository extends JpaRepository<PhanCongDeTai, Long> {
     List<PhanCongDeTai> findByMaHoiDong(String maHoiDong);
+    List<PhanCongDeTai> findByMaHoiDongIn(List<String> maHoiDongs);
 }

@@ -8,7 +8,9 @@ import com.soa.analytics.repository.SoLieuTongHopRepository;
 import com.soa.analytics.service.interfaces.IAnalyticsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -31,15 +33,20 @@ public class AnalyticsService implements IAnalyticsService {
     }
 
     private List<DeTaiClientDTO> fetchAllDeTai() {
-        ApiResponse<List<DeTaiClientDTO>> response = deTaiClient.getAllDeTai();
-        if (response == null || response.getData() == null) {
+        try {
+            ApiResponse<List<DeTaiClientDTO>> response = deTaiClient.getAllDeTai();
+            if (response == null || response.getData() == null) {
+                return Collections.emptyList();
+            }
+            return response.getData();
+        } catch (Exception e) {
+            log.warn("Không thể kết nối detai-service để lấy dữ liệu thống kê: {}", e.getMessage());
             return Collections.emptyList();
         }
-        return response.getData();
     }
 
     @Override
-    @Cacheable(value = "thongKeDeTai")
+    @Cacheable(value = "thongKeTrangThai")
     public ThongKeTrangThaiDTO getThongKeTheoTrangThai() {
         log.info("Computing ThongKeTheoTrangThai from detai-service");
         List<DeTaiClientDTO> list = fetchAllDeTai();
@@ -70,9 +77,19 @@ public class AnalyticsService implements IAnalyticsService {
     }
 
     @Override
-    @Cacheable(value = "thongKeDeTai", key = "#khoa != null ? #khoa : 'ALL'")
+    @Cacheable(value = "tiLeKetQua", key = "#khoa != null ? #khoa : 'ALL'")
     public TiLeKetQuaDTO getTiLeKetQua(String khoa) {
         log.info("Computing TiLeKetQua for khoa: {}", khoa);
+        List<DeTaiClientDTO> list = fetchAllDeTai();
+        if (!list.isEmpty()) {
+            int total = list.size();
+            int dat = (int) list.stream().filter(d -> "DA_NGHIEM_THU".equals(d.getTrangThai())).count();
+            int khongDat = (int) list.stream().filter(d -> "DA_HUY".equals(d.getTrangThai())).count();
+            double tyLe = Math.round(((double) dat / total) * 1000.0) / 10.0;
+            String label = (khoa != null && !khoa.isBlank()) ? "Khoa " + khoa : "Hiện tại";
+            return new TiLeKetQuaDTO(label, total, dat, khongDat, tyLe);
+        }
+
         return repository.findTopByOrderByNgayTongHopDesc()
                 .map(sl -> {
                     int total = sl.getTongSoDeTai() != null ? sl.getTongSoDeTai() : 0;
@@ -81,14 +98,7 @@ public class AnalyticsService implements IAnalyticsService {
                     double tyLe = total > 0 ? Math.round(((double) dat / total) * 1000.0) / 10.0 : 0.0;
                     return new TiLeKetQuaDTO(sl.getKyBaoCao(), total, dat, khongDat, tyLe);
                 })
-                .orElseGet(() -> {
-                    List<DeTaiClientDTO> list = fetchAllDeTai();
-                    int total = list.size();
-                    int dat = (int) list.stream().filter(d -> "DA_NGHIEM_THU".equals(d.getTrangThai())).count();
-                    int khongDat = (int) list.stream().filter(d -> "DA_HUY".equals(d.getTrangThai())).count();
-                    double tyLe = total > 0 ? Math.round(((double) dat / total) * 1000.0) / 10.0 : 0.0;
-                    return new TiLeKetQuaDTO("Hiện tại", total, dat, khongDat, tyLe);
-                });
+                .orElseGet(() -> new TiLeKetQuaDTO("Hiện tại", 0, 0, 0, 0.0));
     }
 
     @Override
@@ -140,5 +150,11 @@ public class AnalyticsService implements IAnalyticsService {
         }
 
         return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Scheduled(fixedRate = 60000)
+    @CacheEvict(value = {"thongKeTrangThai", "tiLeKetQua"}, allEntries = true)
+    public void evictAnalyticsCaches() {
+        log.debug("Expired analytics caches (60s TTL)");
     }
 }

@@ -49,6 +49,9 @@ public class DeTai {
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
 
+    @Version
+    private Long version;
+
     public DeTai() {}
 
     @PrePersist

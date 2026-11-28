@@ -15,4 +15,5 @@ public interface IDeTaiService {
 
     DangKyDTO dangKyDeTai(DangKyRequest req);
     void huyDangKy(Long id);
+    void huyDangKy(Long id, String authRole, String authMaSv);
 }

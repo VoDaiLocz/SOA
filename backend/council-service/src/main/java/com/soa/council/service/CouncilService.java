@@ -7,7 +7,9 @@ import com.soa.council.service.interfaces.ICouncilService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +57,33 @@ public class CouncilService implements ICouncilService {
 
     @Override
     public List<HoiDongDTO> getAllHoiDong() {
-        return hoiDongRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
+        List<HoiDong> hoiDongs = hoiDongRepository.findAll();
+        if (hoiDongs.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> maList = hoiDongs.stream().map(HoiDong::getMaHoiDong).collect(Collectors.toList());
+
+        Map<String, List<ThanhVienHoiDongDTO>> tvByHd = thanhVienHoiDongRepository.findByMaHoiDongIn(maList).stream()
+                .map(tv -> new ThanhVienHoiDongDTO(tv.getId(), tv.getMaHoiDong(), tv.getMaGv(), tv.getTenGv(), tv.getVaiTro()))
+                .collect(Collectors.groupingBy(ThanhVienHoiDongDTO::getMaHoiDong));
+
+        Map<String, List<PhanCongDeTaiDTO>> dtByHd = phanCongDeTaiRepository.findByMaHoiDongIn(maList).stream()
+                .map(pc -> new PhanCongDeTaiDTO(pc.getId(), pc.getMaHoiDong(), pc.getMaDeTai(), pc.getTenDeTai()))
+                .collect(Collectors.groupingBy(PhanCongDeTaiDTO::getMaHoiDong));
+
+        return hoiDongs.stream()
+                .map(hd -> new HoiDongDTO(
+                        hd.getMaHoiDong(),
+                        hd.getTenHoiDong(),
+                        hd.getLoaiHoiDong(),
+                        hd.getNgayHop(),
+                        hd.getDiaDiem(),
+                        hd.getTrangThai(),
+                        tvByHd.getOrDefault(hd.getMaHoiDong(), Collections.emptyList()),
+                        dtByHd.getOrDefault(hd.getMaHoiDong(), Collections.emptyList())
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override

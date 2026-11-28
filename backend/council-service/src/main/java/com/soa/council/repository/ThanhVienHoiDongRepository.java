@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface ThanhVienHoiDongRepository extends JpaRepository<ThanhVienHoiDong, Long> {
     List<ThanhVienHoiDong> findByMaHoiDong(String maHoiDong);
+    List<ThanhVienHoiDong> findByMaHoiDongIn(List<String> maHoiDongs);
 }

@@ -6,4 +6,5 @@ public interface IAuthService {
     AuthResponse login(LoginRequest request);
     AuthResponse register(RegisterRequest request);
     void doiMatKhau(DoiMatKhauRequest request);
+    QuenMatKhauResponse quenMatKhau(QuenMatKhauRequest request);
 }

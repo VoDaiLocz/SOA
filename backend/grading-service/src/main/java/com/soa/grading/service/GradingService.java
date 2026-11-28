@@ -32,9 +32,16 @@ public class GradingService implements IGradingService {
         );
     }
 
+    private void validateScore(Double diemSo) {
+        if (diemSo == null || diemSo < 0.0 || diemSo > 10.0) {
+            throw new IllegalArgumentException("Điểm số phải nằm trong khoảng từ 0.0 đến 10.0");
+        }
+    }
+
     @Override
     @Transactional
     public DiemDTO nhapDiem(NhapDiemRequest req) {
+        validateScore(req.getDiemSo());
         Diem d = new Diem(
                 req.getMaDeTai(),
                 req.getMaGv(),
@@ -52,7 +59,10 @@ public class GradingService implements IGradingService {
         Diem d = diemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bản ghi điểm: " + id));
 
-        if (req.getDiemSo() != null) d.setDiemSo(req.getDiemSo());
+        if (req.getDiemSo() != null) {
+            validateScore(req.getDiemSo());
+            d.setDiemSo(req.getDiemSo());
+        }
         if (req.getNhanXet() != null) d.setNhanXet(req.getNhanXet());
         if (req.getLoaiDiem() != null) d.setLoaiDiem(req.getLoaiDiem());
 
