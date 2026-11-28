@@ -7,64 +7,68 @@
     </div>
 
     <div class="auth-tabs">
-      <button [class.active]="mode === 'login'" (click)="mode = 'login'; errorMsg = ''; successMsg = ''">Đăng nhập</button>
-      <button [class.active]="mode === 'register'" (click)="mode = 'register'; errorMsg = ''; successMsg = ''">Đăng ký SV</button>
-      <button [class.active]="mode === 'change-password'" (click)="mode = 'change-password'; errorMsg = ''; successMsg = ''">Đổi mật khẩu</button>
+      <button [class.active]="mode === 'login'" (click)="switchMode('login')">Đăng nhập</button>
+      <button [class.active]="mode === 'register'" (click)="switchMode('register')">Đăng ký SV</button>
+      <button [class.active]="mode === 'change-password'" (click)="switchMode('change-password')">Đổi mật khẩu</button>
+      <button [class.active]="mode === 'forgot-password'" (click)="switchMode('forgot-password')">Quên mật khẩu</button>
     </div>
 
     <div class="alert-error" *ngIf="errorMsg">{{ errorMsg }}</div>
     <div class="alert-success" *ngIf="successMsg">{{ successMsg }}</div>
 
-    <!-- Login -->
+    <!-- 1. Form Đăng nhập -->
     <form *ngIf="mode === 'login'" (ngSubmit)="onLogin()">
       <div class="form-group">
         <label>Tên đăng nhập</label>
-        <input type="text" class="form-control" [(ngModel)]="loginForm.tenDangNhap" name="tenDangNhap" required />
+        <input type="text" class="form-control" [(ngModel)]="loginForm.tenDangNhap" name="tenDangNhap" placeholder="admin, sv_loc, gv_hung..." required />
       </div>
       <div class="form-group">
         <label>Mật khẩu</label>
-        <input type="password" class="form-control" [(ngModel)]="loginForm.matKhau" name="matKhau" required />
+        <input type="password" class="form-control" [(ngModel)]="loginForm.matKhau" name="matKhau" placeholder="Nhập mật khẩu..." required />
+      </div>
+      <div class="login-helper">
+        <a href="javascript:void(0)" (click)="switchMode('forgot-password')" class="forgot-link">Quên mật khẩu? Nhận OTP qua email</a>
       </div>
       <button type="submit" class="btn btn-primary w-full" [disabled]="loading">
-        {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
+        {{ loading ? 'Đang xử lý...' : 'Đăng nhập hệ thống' }}
       </button>
     </form>
 
-    <!-- Register -->
+    <!-- 2. Form Đăng ký Sinh viên -->
     <form *ngIf="mode === 'register'" (ngSubmit)="onRegister()">
       <div class="form-group">
         <label>Tên đăng nhập</label>
-        <input type="text" class="form-control" [(ngModel)]="registerForm.tenDangNhap" name="regUser" required />
+        <input type="text" class="form-control" [(ngModel)]="registerForm.tenDangNhap" name="regUser" placeholder="Nhập tên đăng nhập..." required />
       </div>
       <div class="form-group">
         <label>Mật khẩu</label>
-        <input type="password" class="form-control" [(ngModel)]="registerForm.matKhau" name="regPass" required />
+        <input type="password" class="form-control" [(ngModel)]="registerForm.matKhau" name="regPass" placeholder="Tối thiểu 6 ký tự..." required />
       </div>
       <div class="form-group">
         <label>Họ và tên</label>
-        <input type="text" class="form-control" [(ngModel)]="registerForm.hoTen" name="regName" required />
+        <input type="text" class="form-control" [(ngModel)]="registerForm.hoTen" name="regName" placeholder="Ví dụ: Nguyễn Văn A" required />
       </div>
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" class="form-control" [(ngModel)]="registerForm.email" name="regEmail" required />
+        <label>Email cá nhân (để nhận OTP/thông báo)</label>
+        <input type="email" class="form-control" [(ngModel)]="registerForm.email" name="regEmail" placeholder="example@qnu.edu.vn" required />
       </div>
       <div class="form-group">
-        <label>Mã sinh viên</label>
-        <input type="text" class="form-control" [(ngModel)]="registerForm.maSinhVien" name="regMaSv" required />
+        <label>Mã sinh viên (MSSV)</label>
+        <input type="text" class="form-control" [(ngModel)]="registerForm.maSinhVien" name="regMaSv" placeholder="Ví dụ: 4351050001" required />
       </div>
       <button type="submit" class="btn btn-crimson w-full" [disabled]="loading">
         {{ loading ? 'Đang đăng ký...' : 'Đăng ký tài khoản' }}
       </button>
     </form>
 
-    <!-- Change Password -->
+    <!-- 3. Form Đổi mật khẩu -->
     <form *ngIf="mode === 'change-password'" (ngSubmit)="onChangePassword()">
       <div class="form-group">
         <label>Tên đăng nhập</label>
         <input type="text" class="form-control" [(ngModel)]="pwdForm.tenDangNhap" name="pwdUser" required />
       </div>
       <div class="form-group">
-        <label>Mật khẩu cũ</label>
+        <label>Mật khẩu hiện tại</label>
         <input type="password" class="form-control" [(ngModel)]="pwdForm.matKhauCu" name="pwdOld" required />
       </div>
       <div class="form-group">
@@ -75,5 +79,39 @@
         {{ loading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu' }}
       </button>
     </form>
+
+    <!-- 4. Form Quên mật khẩu qua Email OTP (Cấp lại mật khẩu) -->
+    <div *ngIf="mode === 'forgot-password'" class="forgot-wrapper">
+      <!-- Bước 1: Yêu cầu gửi mã OTP -->
+      <form *ngIf="forgotStep === 1" (ngSubmit)="onRequestOtp()">
+        <p class="forgot-intro">Nhập Tên đăng nhập hoặc Email bạn đã đăng ký trên hệ thống. Máy chủ sẽ gửi mã xác thực OTP 6 số đến email của bạn.</p>
+        <div class="form-group">
+          <label>Tên đăng nhập hoặc Email</label>
+          <input type="text" class="form-control" [(ngModel)]="forgotForm.emailOrUser" name="emailOrUser" placeholder="admin@qnu.edu.vn hoặc tên đăng nhập" required />
+        </div>
+        <button type="submit" class="btn btn-crimson w-full" [disabled]="loading">
+          {{ loading ? 'Đang gửi mã...' : 'Gửi mã OTP xác nhận về Email' }}
+        </button>
+      </form>
+
+      <!-- Bước 2: Nhập OTP & Đặt lại mật khẩu mới -->
+      <form *ngIf="forgotStep === 2" (ngSubmit)="onResetPassword()">
+        <p class="forgot-intro">Vui lòng kiểm tra hộp thư email (hoặc hòm thư Spam), lấy mã xác thực OTP 6 số và nhập mật khẩu mới dưới đây:</p>
+        <div class="form-group">
+          <label>Mã xác thực OTP (6 chữ số)</label>
+          <input type="text" class="form-control otp-input" [(ngModel)]="forgotForm.otp" name="otpCode" placeholder="Ví dụ: 849201" maxlength="6" required />
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu mới</label>
+          <input type="password" class="form-control" [(ngModel)]="forgotForm.matKhauMoi" name="newPass" placeholder="Nhập mật khẩu mới..." required />
+        </div>
+        <button type="submit" class="btn btn-primary w-full" [disabled]="loading">
+          {{ loading ? 'Đang cập nhật...' : 'Xác nhận đặt lại mật khẩu' }}
+        </button>
+        <div class="resend-box">
+          <button type="button" class="btn-link" (click)="onRequestOtp()" [disabled]="loading">Chưa nhận được mã? Gửi lại OTP</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

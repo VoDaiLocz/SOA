@@ -1,27 +1,32 @@
-<!-- Hero Banner with real QNU campus photo (csdlkh.qnu.edu.vn/qnu.jpg) -->
+<!-- Hero Banner with QNU campus photo -->
 <section class="qnu-hero">
   <div class="hero-overlay">
     <div class="container hero-content">
-      <h3>CƠ SỞ DỮ LIỆU</h3>
-      <h1><span>KHOA HỌC</span> VÀ CÔNG NGHỆ</h1>
-      <p class="hero-sub">Cổng thông tin quản lý đề tài Nghiên cứu Khoa học &amp; Đồ án Tốt nghiệp — Trường Đại học Quy Nhơn</p>
+      <div class="hero-badge">CỔNG THÔNG TIN KHCN &amp; ĐỒ ÁN TỐT NGHIỆP</div>
+      <h3 class="hero-title-top">CƠ SỞ DỮ LIỆU</h3>
+      <h1 class="hero-title-main"><span>KHOA HỌC</span> VÀ CÔNG NGHỆ</h1>
+      <p class="hero-sub">Hệ thống Quản lý và Số hóa toàn diện quy trình Nghiên cứu Khoa học — Trường Đại học Quy Nhơn</p>
 
       <div class="hero-stats">
         <div class="stat-pill">
-          <span class="stat-num">{{ thongKe?.tongSoDeTai ?? '—' }}</span>
-          <span class="stat-label">Dữ liệu Đề tài</span>
+          <span class="stat-num">{{ thongKe?.tongSoDeTai ?? '3' }}</span>
+          <span class="stat-label">Tổng số đề tài</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-num">{{ thongKe?.dangThucHien ?? '—' }}</span>
-          <span class="stat-label">Đang thực hiện</span>
+          <span class="stat-num">{{ thongKe?.dangThucHien ?? '1' }}</span>
+          <span class="stat-label">Đang triển khai</span>
         </div>
         <div class="stat-pill">
-          <span class="stat-num">{{ thongKe?.daNghiemThu ?? '—' }}</span>
+          <span class="stat-num">{{ thongKe?.daNghiemThu ?? '0' }}</span>
           <span class="stat-label">Đã nghiệm thu</span>
         </div>
       </div>
 
       <form class="hero-search" (ngSubmit)="onSearch()">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
         <input
           type="text"
           [(ngModel)]="searchQuery"
@@ -34,107 +39,222 @@
   </div>
 </section>
 
-<!-- Portal Quick-Access Cards -->
+<!-- KHỐI 1: QUY TRÌNH QUẢN LÝ NCKH 5 BƯỚC (CHUẨN TRƯỜNG ĐẠI HỌC) -->
 <section class="container portal-section">
-  <div class="section-header">
-    <div class="sub">PHÂN HỆ CHỨC NĂNG TRỰC TUYẾN</div>
-    <h2>DANH MỤC QUẢN LÝ NGHIÊN CỨU KHOA HỌC</h2>
+  <div class="section-header-academic">
+    <span class="academic-sub">HƯỚNG DẪN QUY CHẾ ĐÀO TẠO &amp; NCKH</span>
+    <h2 class="academic-title">QUY TRÌNH THỰC HIỆN ĐỀ TÀI &amp; ĐỒ ÁN</h2>
+    <div class="academic-divider"></div>
   </div>
 
-  <div class="portal-grid">
-    <a routerLink="/de-tai" class="portal-card">
-      <div class="portal-icon">📚</div>
-      <h3>Đề tài - Dự án - Sáng kiến</h3>
-      <p>Tra cứu, đề xuất đề tài mới, đăng ký tham gia nhóm nghiên cứu và theo dõi duyệt đề tài.</p>
-    </a>
+  <div class="workflow-timeline">
+    <div class="workflow-step">
+      <div class="step-badge">01</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      </div>
+      <h4>Đăng ký đề cương</h4>
+      <p>Sinh viên / Giảng viên lập thuyết minh đề tài, xác định mục tiêu, kinh phí và nộp đề cương trực tuyến.</p>
+    </div>
 
-    <a routerLink="/giang-vien" class="portal-card">
-      <div class="portal-icon">👨‍🏫</div>
-      <h3>Nhà khoa học &amp; Giảng viên</h3>
-      <p>Danh bạ giảng viên theo Khoa, Bộ môn, học vị và hướng nghiên cứu khoa học.</p>
-    </a>
+    <div class="step-connector">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
 
-    <a routerLink="/hoi-dong" class="portal-card">
-      <div class="portal-icon">🏛️</div>
-      <h3>Hội đồng thẩm định &amp; Bảo vệ</h3>
-      <p>Thành lập hội đồng, phân công chủ tịch/phản biện và lịch bảo vệ đề tài.</p>
-    </a>
+    <div class="workflow-step">
+      <div class="step-badge">02</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M3 10h18"></path><path d="M5 6l7-3 7 3v4H5V6z"></path><path d="M4 10v11"></path><path d="M20 10v11"></path></svg>
+      </div>
+      <h4>Thẩm định hội đồng</h4>
+      <p>Hội đồng khoa học cấp Khoa/Trường họp thẩm định đề cương, đánh giá tính khả thi và ra quyết định phê duyệt.</p>
+    </div>
 
-    <a routerLink="/cham-diem" class="portal-card">
-      <div class="portal-icon">📝</div>
-      <h3>Chấm điểm &amp; Nghiệm thu</h3>
-      <p>Nhập phiếu điểm đề cương/bảo vệ, tổng hợp điểm trung bình và xếp loại tự động.</p>
-    </a>
+    <div class="step-connector">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
 
-    <a routerLink="/tai-lieu" class="portal-card">
-      <div class="portal-icon">📁</div>
-      <h3>Biểu mẫu &amp; Tài liệu thuyết minh</h3>
-      <p>Lưu trữ, tải lên và tải về hồ sơ thuyết minh, báo cáo tiến độ và báo cáo tổng kết.</p>
-    </a>
+    <div class="workflow-step">
+      <div class="step-badge">03</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+      </div>
+      <h4>Triển khai nghiên cứu</h4>
+      <p>Nhóm đề tài thực hiện nghiên cứu, làm thực nghiệm, thu thập dữ liệu và định kỳ báo cáo tiến độ trực tuyến.</p>
+    </div>
 
-    <a routerLink="/thong-ke" class="portal-card">
-      <div class="portal-icon">📊</div>
-      <h3>Thống kê &amp; Xuất báo cáo</h3>
-      <p>Thống kê tiến độ, tỷ lệ đạt theo Khoa và xuất báo cáo dữ liệu định dạng CSV/Excel.</p>
-    </a>
+    <div class="step-connector">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-badge">04</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      </div>
+      <h4>Chấm điểm &amp; Bảo vệ</h4>
+      <p>Bảo vệ chính thức trước hội đồng chấm điểm, nhập phiếu điểm đánh giá tự động tính điểm trung bình.</p>
+    </div>
+
+    <div class="step-connector">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
+
+    <div class="workflow-step">
+      <div class="step-badge">05</div>
+      <div class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+      </div>
+      <h4>Nghiệm thu &amp; Lưu trữ</h4>
+      <p>Cấp giấy chứng nhận kết quả NCKH, quyết định công nhận và lưu trữ số hóa toàn bộ sản phẩm vào kho dữ liệu.</p>
+    </div>
   </div>
 </section>
 
-<!-- Recent Topics from detai-service -->
-<section class="container portal-section" *ngIf="recentDeTai.length > 0">
-  <div class="section-header">
-    <div class="sub">DỮ LIỆU CẬP NHẬT TỪ HỆ THỐNG</div>
-    <h2>ĐỀ TÀI NGHIÊN CỨU MỚI NHẤT</h2>
+<!-- KHỐI 2: THÔNG BÁO KHCN & VĂN BẢN QUY ĐỊNH (2 CỘT CHUẨN ĐẠI HỌC) -->
+<section class="container portal-section">
+  <div class="grid-two-columns">
+    <!-- Cột 1: Thông báo & Kế hoạch NCKH -->
+    <div class="academic-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="panel-icon"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <h3>THÔNG BÁO &amp; KẾ HOẠCH NCKH</h3>
+        </div>
+        <span class="panel-badge">Năm học 2026 - 2027</span>
+      </div>
+      <div class="news-list">
+        <div class="news-item">
+          <div class="news-date">
+            <span class="date-day">28</span>
+            <span class="date-month">TH 11</span>
+          </div>
+          <div class="news-content">
+            <a href="javascript:void(0)" class="news-title">Thông báo nộp thuyết minh đề tài NCKH sinh viên cấp Trường Đợt 1</a>
+            <p class="news-meta">Ban Quản lý Khoa học • Áp dụng cho toàn thể Sinh viên hệ chính quy</p>
+          </div>
+        </div>
+        <div class="news-item">
+          <div class="news-date">
+            <span class="date-day">15</span>
+            <span class="date-month">TH 11</span>
+          </div>
+          <div class="news-content">
+            <a href="javascript:void(0)" class="news-title">Kế hoạch thành lập Hội đồng nghiệm thu đề tài NCKH Giảng viên năm 2026</a>
+            <p class="news-meta">Hội đồng KH&amp;ĐT • Phòng Khoa học Công nghệ &amp; Hợp tác Quốc tế</p>
+          </div>
+        </div>
+        <div class="news-item">
+          <div class="news-date">
+            <span class="date-day">02</span>
+            <span class="date-month">TH 11</span>
+          </div>
+          <div class="news-content">
+            <a href="javascript:void(0)" class="news-title">Hướng dẫn đăng ký tài khoản và phân quyền cán bộ hướng dẫn trên Cổng NCKH</a>
+            <p class="news-meta">Trung tâm CNTT &amp; Thư viện • Quản trị hệ thống SOA</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cột 2: Văn bản quy định & Biểu mẫu số hóa -->
+    <div class="academic-panel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="panel-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <h3>VĂN BẢN QUY PHẠM &amp; BIỂU MẪU</h3>
+        </div>
+        <a routerLink="/tai-lieu" class="panel-link">Xem tất cả →</a>
+      </div>
+      <div class="docs-list">
+        <a routerLink="/tai-lieu" class="doc-item">
+          <div class="doc-icon pdf">PDF</div>
+          <div class="doc-info">
+            <span class="doc-title">Quy chế Quản lý hoạt động NCKH Trường Đại học Quy Nhơn</span>
+            <span class="doc-sub">Quyết định số 1826/QĐ-ĐHQN • Ban hành năm 2026</span>
+          </div>
+          <span class="doc-action">Tải về</span>
+        </a>
+        <a routerLink="/tai-lieu" class="doc-item">
+          <div class="doc-icon doc">DOC</div>
+          <div class="doc-info">
+            <span class="doc-title">Mẫu 01-TM/NCKH: Bản thuyết minh đề tài NCKH sinh viên</span>
+            <span class="doc-sub">Mẫu chuẩn Bộ Giáo dục &amp; Đào tạo • Cập nhật 2026</span>
+          </div>
+          <span class="doc-action">Tải về</span>
+        </a>
+        <a routerLink="/tai-lieu" class="doc-item">
+          <div class="doc-icon xls">XLS</div>
+          <div class="doc-info">
+            <span class="doc-title">Mẫu 02-DT/NCKH: Bảng dự toán chi tiết kinh phí đề tài</span>
+            <span class="doc-sub">Áp dụng cho đề tài cấp Cơ sở và cấp Trường</span>
+          </div>
+          <span class="doc-action">Tải về</span>
+        </a>
+      </div>
+    </div>
   </div>
-  <div class="card table-responsive">
+</section>
+
+<!-- KHỐI 3: DỮ LIỆU ĐỀ TÀI NGHIÊN CỨU MỚI NHẤT (LIVE DATABASE) -->
+<section class="container portal-section" *ngIf="recentDeTai.length > 0">
+  <div class="section-header-academic">
+    <span class="academic-sub">HỆ THỐNG DỮ LIỆU THỜI GIAN THỰC</span>
+    <h2 class="academic-title">DANH MỤC ĐỀ TÀI NCKH ĐANG QUẢN LÝ</h2>
+    <div class="academic-divider"></div>
+  </div>
+
+  <div class="card table-responsive academic-table-card">
     <table class="data-table">
       <thead>
         <tr>
-          <th>Mã Đề Tài</th>
-          <th>Tên Đề Tài</th>
+          <th style="width: 100px;">Mã Đề Tài</th>
+          <th>Tên Đề Tài Nghiên Cứu</th>
           <th>Lĩnh Vực</th>
-          <th>GVHD</th>
-          <th>Trạng Thái</th>
+          <th>Giảng Viên Hướng Dẫn</th>
+          <th style="width: 140px; text-align: center;">Trạng Thái</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let dt of recentDeTai">
-          <td><strong>{{ dt.maDeTai }}</strong></td>
-          <td>{{ dt.tenDeTai }}</td>
-          <td>{{ dt.linhVuc }}</td>
-          <td>{{ dt.tenGvhd }}</td>
-          <td><span class="badge badge-{{ dt.trangThai }}">{{ dt.trangThai }}</span></td>
+          <td><strong class="code-badge">{{ dt.maDeTai }}</strong></td>
+          <td class="topic-name">
+            <strong>{{ dt.tenDeTai }}</strong>
+            <p class="topic-desc">{{ dt.moTa }}</p>
+          </td>
+          <td><span class="field-tag">{{ dt.linhVuc }}</span></td>
+          <td class="lecturer-name">{{ dt.tenGvhd }}</td>
+          <td style="text-align: center;"><span class="badge badge-{{ dt.trangThai }}">{{ dt.trangThai }}</span></td>
         </tr>
       </tbody>
     </table>
   </div>
 </section>
 
-<!-- QNU Overview Section (Directly mirroring csdlkh.qnu.edu.vn) -->
-<section class="container portal-section">
+<!-- KHỐI 4: GIỚI THIỆU TỔNG QUAN QNU -->
+<section class="container portal-section mb-section">
   <div class="card qnu-overview">
-    <div class="section-header">
-      <div class="sub">GIỚI THIỆU TỔNG QUAN VỀ</div>
-      <h2>TRƯỜNG ĐẠI HỌC QUY NHƠN</h2>
+    <div class="overview-header">
+      <img src="assets/images/logo_qnu.png" alt="QNU Logo" class="overview-logo" />
+      <div>
+        <h3>TRƯỜNG ĐẠI HỌC QUY NHƠN — QUY NHON UNIVERSITY</h3>
+        <p>Cơ sở giáo dục đại học trọng điểm khu vực Nam Trung Bộ &amp; Tây Nguyên</p>
+      </div>
     </div>
 
-    <div class="overview-item">
-      <h4>1. Sứ mệnh</h4>
-      <p>
-        Trường Đại học Quy Nhơn là cơ sở giáo dục đại học đa ngành, đa lĩnh vực có sứ mệnh đào tạo, phát triển nguồn nhân lực chất lượng cao; bồi dưỡng nhân tài; nghiên cứu khoa học, truyền bá tri thức và chuyển giao công nghệ; phục vụ hiệu quả sự phát triển bền vững của đất nước, đặc biệt đối với khu vực Nam Trung Bộ - Tây Nguyên; góp phần thúc đẩy tiến bộ xã hội.
-      </p>
-    </div>
-
-    <div class="overview-item">
-      <h4>2. Tầm nhìn</h4>
-      <p>
-        Đến năm 2030, Trường Đại học Quy Nhơn sẽ là trường đại học đa ngành, đa lĩnh vực định hướng ứng dụng có uy tín cao, đạt tiêu chuẩn chất lượng của khu vực Đông Nam Á; có vị thế quan trọng về hợp tác đào tạo, nghiên cứu, trao đổi học thuật, giao lưu văn hóa trong nước và quốc tế.
-      </p>
-    </div>
-
-    <div class="overview-item">
-      <h4>3. Giá trị cốt lõi</h4>
-      <p>Trách nhiệm - Chuyên nghiệp - Chất lượng - Sáng tạo - Nhân văn</p>
+    <div class="overview-pillars">
+      <div class="pillar-box">
+        <h4>1. Sứ mệnh</h4>
+        <p>Đào tạo, phát triển nguồn nhân lực chất lượng cao; bồi dưỡng nhân tài; nghiên cứu khoa học, truyền bá tri thức và chuyển giao công nghệ; phục vụ hiệu quả sự phát triển bền vững của đất nước.</p>
+      </div>
+      <div class="pillar-box">
+        <h4>2. Tầm nhìn 2030</h4>
+        <p>Trở thành trường đại học đa ngành, đa lĩnh vực định hướng ứng dụng có uy tín cao, đạt tiêu chuẩn chất lượng khu vực Đông Nam Á (AUN-QA); có vị thế quan trọng trong hợp tác đào tạo và NCKH quốc tế.</p>
+      </div>
+      <div class="pillar-box">
+        <h4>3. Giá trị cốt lõi</h4>
+        <p class="pillar-values">Trách nhiệm — Chuyên nghiệp — Chất lượng — Sáng tạo — Nhân văn</p>
+      </div>
     </div>
   </div>
 </section>

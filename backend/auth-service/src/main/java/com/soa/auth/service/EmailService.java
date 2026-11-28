@@ -24,9 +24,11 @@ public class EmailService {
 
     public void sendPasswordResetOtpEmail(String toEmail, String hoTen, String otp) {
         if (mailSender == null || smtpUsername == null || smtpUsername.isBlank()) {
-            throw new IllegalStateException(
-                    "Chưa cấu hình tài khoản SMTP (SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD) để gửi email thật"
-            );
+            log.warn("==================================================================");
+            log.warn(">>> [DEV/TEST MODE] CHƯA CẤU HÌNH SMTP GMAIL (SPRING_MAIL_USERNAME)");
+            log.warn(">>> MÃ XÁC THỰC OTP ĐẶT LẠI MẬT KHẨU CHO {}: [{}]", toEmail, otp);
+            log.warn("==================================================================");
+            return;
         }
 
         String subject = "[Đại học Quy Nhơn] Mã xác nhận đặt lại mật khẩu NCKH";

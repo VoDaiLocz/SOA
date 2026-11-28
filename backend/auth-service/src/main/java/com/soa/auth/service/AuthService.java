@@ -123,14 +123,23 @@ public class AuthService implements IAuthService {
     @Override
     @Transactional
     public QuenMatKhauResponse quenMatKhau(QuenMatKhauRequest request) {
-        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng cung cấp địa chỉ email liên kết");
+        String identifier = request.getEmail() != null && !request.getEmail().trim().isEmpty() 
+                ? request.getEmail().trim() 
+                : (request.getTenDangNhap() != null ? request.getTenDangNhap().trim() : null);
+
+        if (identifier == null || identifier.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng cung cấp địa chỉ email hoặc tên đăng nhập");
         }
 
-        String email = request.getEmail().trim();
-        TaiKhoan tk = taiKhoanRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản liên kết với email: " + email));
+        TaiKhoan tk = taiKhoanRepository.findByEmail(identifier)
+                .or(() -> taiKhoanRepository.findByTenDangNhap(identifier))
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với: " + identifier));
 
+        if (tk.getEmail() == null || tk.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tài khoản này chưa có email liên kết để nhận OTP");
+        }
+
+        String email = tk.getEmail().trim();
         String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
         tk.setResetOtp(otp);
         tk.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
@@ -149,11 +158,13 @@ public class AuthService implements IAuthService {
     public void datLaiMatKhau(XacNhanDatLaiMatKhauRequest request) {
         if (request.getEmail() == null || request.getOtp() == null || request.getMatKhauMoi() == null
                 || request.getMatKhauMoi().isBlank()) {
-            throw new IllegalArgumentException("Vui lòng nhập đầy đủ email, mã OTP và mật khẩu mới");
+            throw new IllegalArgumentException("Vui lòng nhập đầy đủ email hoặc tên đăng nhập, mã OTP và mật khẩu mới");
         }
 
-        TaiKhoan tk = taiKhoanRepository.findByEmail(request.getEmail().trim())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với email này"));
+        String identifier = request.getEmail().trim();
+        TaiKhoan tk = taiKhoanRepository.findByEmail(identifier)
+                .or(() -> taiKhoanRepository.findByTenDangNhap(identifier))
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với: " + identifier));
 
         if (tk.getResetOtp() == null || tk.getResetOtpExpiry() == null
                 || LocalDateTime.now().isAfter(tk.getResetOtpExpiry())) {

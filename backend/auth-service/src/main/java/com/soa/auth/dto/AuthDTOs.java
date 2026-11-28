@@ -106,6 +106,7 @@ public class AuthDTOs {
 
     public static class QuenMatKhauRequest {
         private String email;
+        private String tenDangNhap;
 
         public QuenMatKhauRequest() {}
         public QuenMatKhauRequest(String email) {
@@ -114,6 +115,9 @@ public class AuthDTOs {
 
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
+
+        public String getTenDangNhap() { return tenDangNhap; }
+        public void setTenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; }
     }
 
     public static class QuenMatKhauResponse {

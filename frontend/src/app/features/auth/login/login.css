@@ -6,7 +6,7 @@
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
 }
 
 .auth-header {
@@ -32,28 +32,85 @@
 .auth-tabs {
   display: flex;
   border-bottom: 1px solid #dce4ee;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .auth-tabs button {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 10px 8px;
-  font-size: 13px;
+  padding: 10px 4px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #64748b;
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .auth-tabs button.active {
   color: #2a579a;
   border-bottom-color: #f2184f;
+  font-weight: 700;
 }
 
 .w-full {
   width: 100%;
   justify-content: center;
-  margin-top: 6px;
+  margin-top: 10px;
+}
+
+.login-helper {
+  margin: 6px 0 14px;
+  text-align: right;
+}
+
+.forgot-link {
+  font-size: 12.5px;
+  color: #2a579a;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.forgot-link:hover {
+  color: #f2184f;
+  text-decoration: underline;
+}
+
+.forgot-intro {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #2a579a;
+}
+
+.otp-input {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+.resend-box {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.btn-link {
+  background: transparent;
+  border: none;
+  color: #2a579a;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-link:hover {
+  color: #f2184f;
 }

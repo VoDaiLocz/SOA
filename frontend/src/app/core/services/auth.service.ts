@@ -44,6 +44,21 @@ export class AuthService {
     });
   }
 
+  quenMatKhau(tenDangNhapHoacEmail: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.baseUrl}/quen-mat-khau`, {
+      email: tenDangNhapHoacEmail,
+      tenDangNhap: tenDangNhapHoacEmail
+    });
+  }
+
+  datLaiMatKhau(emailOrUser: string, otp: string, matKhauMoi: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/dat-lai-mat-khau`, {
+      email: emailOrUser,
+      otp,
+      matKhauMoi
+    });
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
