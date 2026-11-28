@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 @Service
 public class AuthService implements IAuthService {
@@ -88,19 +89,43 @@ public class AuthService implements IAuthService {
         TaiKhoan tk = taiKhoanRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản liên kết với email: " + email));
 
-        // Tạo mật khẩu ngẫu nhiên an toàn bằng SecureRandom (Qnu@ + 4 số)
-        SecureRandom random = new SecureRandom();
-        String tempPassword = "Qnu@" + (1000 + random.nextInt(9000));
-        tk.setMatKhau(passwordEncoder.encode(tempPassword));
+        // Sinh mã OTP 6 chữ số có thời hạn 15 phút (không ghi đè mật khẩu trước khi xác thực OTP)
+        String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
+        tk.setResetOtp(otp);
+        tk.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
         taiKhoanRepository.save(tk);
 
-        // Gửi email thông báo (không trả mật khẩu qua HTTP response)
-        emailService.sendPasswordResetEmail(email, tk.getHoTen(), tempPassword);
+        emailService.sendPasswordResetOtpEmail(email, tk.getHoTen(), otp);
 
         return new QuenMatKhauResponse(
                 email,
-                "Mật khẩu tạm thời đã được tạo và gửi đến email " + email + ". Vui lòng kiểm tra hộp thư đến."
+                "Mã xác nhận (OTP) có hiệu lực 15 phút đã được gửi tới email " + email
         );
+    }
+
+    @Override
+    @Transactional
+    public void datLaiMatKhau(XacNhanDatLaiMatKhauRequest request) {
+        if (request.getEmail() == null || request.getOtp() == null || request.getMatKhauMoi() == null
+                || request.getMatKhauMoi().isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập đầy đủ email, mã OTP và mật khẩu mới");
+        }
+
+        TaiKhoan tk = taiKhoanRepository.findByEmail(request.getEmail().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với email này"));
+
+        if (tk.getResetOtp() == null || tk.getResetOtpExpiry() == null
+                || LocalDateTime.now().isAfter(tk.getResetOtpExpiry())) {
+            throw new IllegalArgumentException("Mã OTP đã hết hạn hoặc chưa được yêu cầu");
+        }
+        if (!tk.getResetOtp().equals(request.getOtp().trim())) {
+            throw new IllegalArgumentException("Mã OTP không chính xác");
+        }
+
+        tk.setMatKhau(passwordEncoder.encode(request.getMatKhauMoi()));
+        tk.setResetOtp(null);
+        tk.setResetOtpExpiry(null);
+        taiKhoanRepository.save(tk);
     }
 
 }

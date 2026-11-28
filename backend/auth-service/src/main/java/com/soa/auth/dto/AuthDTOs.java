@@ -133,4 +133,21 @@ public class AuthDTOs {
         public void setThongBao(String thongBao) { this.thongBao = thongBao; }
     }
 
+    public static class XacNhanDatLaiMatKhauRequest {
+        private String email;
+        private String otp;
+        private String matKhauMoi;
+
+        public XacNhanDatLaiMatKhauRequest() {}
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getOtp() { return otp; }
+        public void setOtp(String otp) { this.otp = otp; }
+
+        public String getMatKhauMoi() { return matKhauMoi; }
+        public void setMatKhauMoi(String matKhauMoi) { this.matKhauMoi = matKhauMoi; }
+    }
+
 }

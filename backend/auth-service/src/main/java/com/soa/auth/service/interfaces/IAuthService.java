@@ -7,4 +7,5 @@ public interface IAuthService {
     AuthResponse register(RegisterRequest request);
     void doiMatKhau(DoiMatKhauRequest request);
     QuenMatKhauResponse quenMatKhau(QuenMatKhauRequest request);
+    void datLaiMatKhau(XacNhanDatLaiMatKhauRequest request);
 }

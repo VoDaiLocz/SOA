@@ -35,6 +35,12 @@ public class TaiKhoan {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "reset_otp", length = 10)
+    private String resetOtp;
+
+    @Column(name = "reset_otp_expiry")
+    private LocalDateTime resetOtpExpiry;
+
     public TaiKhoan() {}
 
     @PrePersist
@@ -70,4 +76,10 @@ public class TaiKhoan {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getResetOtp() { return resetOtp; }
+    public void setResetOtp(String resetOtp) { this.resetOtp = resetOtp; }
+
+    public LocalDateTime getResetOtpExpiry() { return resetOtpExpiry; }
+    public void setResetOtpExpiry(LocalDateTime resetOtpExpiry) { this.resetOtpExpiry = resetOtpExpiry; }
 }

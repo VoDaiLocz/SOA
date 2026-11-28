@@ -22,24 +22,24 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendPasswordResetEmail(String toEmail, String hoTen, String temporaryPassword) {
+    public void sendPasswordResetOtpEmail(String toEmail, String hoTen, String otp) {
         if (mailSender == null || smtpUsername == null || smtpUsername.isBlank()) {
             throw new IllegalStateException(
                     "Chưa cấu hình tài khoản SMTP (SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD) để gửi email thật"
             );
         }
 
-        String subject = "[Đại học Quy Nhơn] Cấp lại mật khẩu tài khoản NCKH";
+        String subject = "[Đại học Quy Nhơn] Mã xác nhận đặt lại mật khẩu NCKH";
         String content = String.format(
                 "Kính gửi %s,\n\n" +
-                "Hệ thống Quản lý Đề tài Nghiên cứu Khoa học & Đồ án Tốt nghiệp - Trường Đại học Quy Nhơn nhận được yêu cầu cấp lại mật khẩu cho tài khoản liên kết với email này.\n\n" +
-                "Mật khẩu tạm thời mới của bạn là: %s\n\n" +
-                "Vui lòng đăng nhập vào hệ thống tại http://localhost:4200 và thực hiện đổi mật khẩu ngay để đảm bảo an toàn thông tin.\n\n" +
+                "Hệ thống Quản lý Đề tài NCKH & Đồ án Tốt nghiệp - Trường Đại học Quy Nhơn nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với email này.\n\n" +
+                "Mã xác nhận (OTP) của bạn là: %s\n" +
+                "Mã có hiệu lực trong vòng 15 phút. Tuyệt đối không chia sẻ mã này cho người khác.\n\n" +
+                "Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này — mật khẩu hiện tại của bạn vẫn an toàn.\n\n" +
                 "Trân trọng,\n" +
-                "Phòng Khoa học Công nghệ & Hợp tác Quốc tế - Trường Đại học Quy Nhơn\n" +
-                "Số 170 An Dương Vương, TP. Quy Nhơn, Bình Định",
+                "Phòng Khoa học Công nghệ & Hợp tác Quốc tế - Trường Đại học Quy Nhơn",
                 hoTen != null ? hoTen : "Quý Thầy/Cô và Bạn",
-                temporaryPassword
+                otp
         );
 
         try {
@@ -49,7 +49,7 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(content);
             mailSender.send(message);
-            log.info("Đã gửi email khôi phục mật khẩu thành công tới: {}", toEmail);
+            log.info("Đã gửi email OTP đặt lại mật khẩu tới: {}", toEmail);
         } catch (Exception e) {
             log.error("Lỗi gửi email SMTP tới {}: {}", toEmail, e.getMessage());
             throw new IllegalStateException("Không thể gửi email qua SMTP: " + e.getMessage(), e);

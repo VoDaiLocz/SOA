@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,21 +48,45 @@ class AuthServiceTest {
     }
 
     @Test
-    void quenMatKhauEncodesTempPasswordAndSendsEmail() {
+    void quenMatKhauGeneratesOtpWithoutOverwritingPassword() {
         TaiKhoan tk = new TaiKhoan();
         tk.setTenDangNhap("sv001");
+        tk.setMatKhau("original-hash");
         tk.setHoTen("Nguyen Van A");
         tk.setEmail("sv001@qnu.edu.vn");
 
         when(taiKhoanRepository.findByEmail("sv001@qnu.edu.vn")).thenReturn(Optional.of(tk));
-        when(passwordEncoder.encode(anyString())).thenReturn("new-encoded");
 
         QuenMatKhauResponse res = authService.quenMatKhau(new QuenMatKhauRequest("sv001@qnu.edu.vn"));
 
         assertEquals("sv001@qnu.edu.vn", res.getEmail());
-        assertNotNull(res.getThongBao());
-        assertEquals("new-encoded", tk.getMatKhau());
+        assertEquals("original-hash", tk.getMatKhau());
+        assertNotNull(tk.getResetOtp());
+        assertEquals(6, tk.getResetOtp().length());
+        assertNotNull(tk.getResetOtpExpiry());
+        verify(emailService).sendPasswordResetOtpEmail(eq("sv001@qnu.edu.vn"), eq("Nguyen Van A"), eq(tk.getResetOtp()));
+    }
+
+    @Test
+    void datLaiMatKhauVerifiesOtpAndClearsToken() {
+        TaiKhoan tk = new TaiKhoan();
+        tk.setEmail("sv001@qnu.edu.vn");
+        tk.setResetOtp("123456");
+        tk.setResetOtpExpiry(LocalDateTime.now().plusMinutes(10));
+
+        when(taiKhoanRepository.findByEmail("sv001@qnu.edu.vn")).thenReturn(Optional.of(tk));
+        when(passwordEncoder.encode("NewPass@123")).thenReturn("new-hash");
+
+        XacNhanDatLaiMatKhauRequest req = new XacNhanDatLaiMatKhauRequest();
+        req.setEmail("sv001@qnu.edu.vn");
+        req.setOtp("123456");
+        req.setMatKhauMoi("NewPass@123");
+
+        authService.datLaiMatKhau(req);
+
+        assertEquals("new-hash", tk.getMatKhau());
+        assertNull(tk.getResetOtp());
+        assertNull(tk.getResetOtpExpiry());
         verify(taiKhoanRepository).save(tk);
-        verify(emailService).sendPasswordResetEmail(eq("sv001@qnu.edu.vn"), eq("Nguyen Van A"), anyString());
     }
 }

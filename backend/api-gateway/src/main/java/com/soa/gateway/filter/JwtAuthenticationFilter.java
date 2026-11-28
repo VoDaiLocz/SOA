@@ -19,10 +19,12 @@ import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * GlobalFilter xác thực JWT, kiểm tra phân quyền RBAC tại API Gateway
+ * GlobalFilter xác thực JWT, kiểm tra phân quyền RBAC, giới hạn tần suất gọi Auth (Rate Limit)
  * và chuyển tiếp header danh tính đáng tin cậy xuống các microservice.
  */
 @Component
@@ -30,6 +32,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private static final Set<String> ADMIN_ROLES = Set.of("ADMIN", "QUAN_LY");
     private static final Set<String> STAFF_ROLES = Set.of("ADMIN", "QUAN_LY", "GIANG_VIEN");
+    private static final int AUTH_RATE_LIMIT = 15;
+    private static final long WINDOW_MS = 60_000L;
+
+    private final Map<String, long[]> authRateBuckets = new ConcurrentHashMap<>();
 
     @Value("${app.jwt.secret}")
     private String jwtSecret;
@@ -40,7 +46,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String path = request.getURI().getPath();
         HttpMethod method = request.getMethod();
 
-        if (HttpMethod.OPTIONS.equals(method) || isPublicEndpoint(path, method)) {
+        if (HttpMethod.OPTIONS.equals(method)) {
+            return chain.filter(exchange);
+        }
+
+        if (isRateLimitedAuthPath(path) && isRateExceeded(extractClientIp(request))) {
+            return errorResponse(exchange, HttpStatus.TOO_MANY_REQUESTS, "Quá nhiều yêu cầu, vui lòng thử lại sau 1 phút");
+        }
+
+        if (isPublicEndpoint(path, method)) {
             return chain.filter(exchange);
         }
 
@@ -67,7 +81,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return errorResponse(exchange, HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này");
         }
 
-        // Xóa các header X-Auth-* do client tự gửi lên để chống giả mạo trước khi gán giá trị từ JWT
         ServerHttpRequest mutatedRequest = request.mutate()
                 .headers(headers -> {
                     headers.remove("X-Auth-User");
@@ -80,6 +93,30 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .build();
 
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
+    }
+
+    private boolean isRateLimitedAuthPath(String path) {
+        return "/api/v1/auth/login".equals(path) || "/api/v1/auth/quen-mat-khau".equals(path);
+    }
+
+    private boolean isRateExceeded(String clientIp) {
+        long now = System.currentTimeMillis();
+        long[] bucket = authRateBuckets.compute(clientIp, (k, v) -> {
+            if (v == null || now - v[0] >= WINDOW_MS) {
+                return new long[]{now, 1L};
+            }
+            v[1]++;
+            return v;
+        });
+        return bucket[1] > AUTH_RATE_LIMIT;
+    }
+
+    private String extractClientIp(ServerHttpRequest request) {
+        String forwarded = request.getHeaders().getFirst("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddress() != null ? request.getRemoteAddress().getAddress().getHostAddress() : "unknown";
     }
 
     private boolean isPublicEndpoint(String path, HttpMethod method) {
