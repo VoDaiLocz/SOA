@@ -1,11 +1,13 @@
 package com.soa.auth.service;
 
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +29,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetOtpEmail(String toEmail, String hoTen, String otp) {
-        if (mailSender == null || smtpUsername == null || smtpUsername.isBlank()) {
+        if (!hasSmtpConfig()) {
             log.warn("==================================================================");
             log.warn(">>> [DEV/TEST MODE] CHƯA CẤU HÌNH SMTP GMAIL (SPRING_MAIL_USERNAME)");
             log.warn(">>> MÃ XÁC THỰC OTP ĐẶT LẠI MẬT KHẨU CHO {}: [{}]", toEmail, otp);
@@ -49,11 +51,15 @@ public class EmailService {
         );
 
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(smtpUsername);
-            message.setTo(toEmail);
-            message.setSubject(subject);
-            message.setText(content);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            // Thiết lập tên hiển thị chuyên nghiệp đại diện cho Trường ĐH Quy Nhơn
+            helper.setFrom(new InternetAddress(smtpUsername, "Cổng Thông Tin NCKH - ĐH Quy Nhơn", "UTF-8"));
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(content);
+
             mailSender.send(message);
             log.info("Đã gửi email OTP đặt lại mật khẩu tới: {}", toEmail);
         } catch (Exception e) {
