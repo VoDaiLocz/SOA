@@ -19,52 +19,29 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
-        try {
-            AuthResponse res = authService.login(request);
-            return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công", res));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công", authService.login(request)));
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
-        try {
-            AuthResponse res = authService.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đăng ký tài khoản thành công", res));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Đăng ký tài khoản thành công", authService.register(request)));
     }
 
     @PostMapping("/doi-mat-khau")
     public ResponseEntity<ApiResponse<Void>> doiMatKhau(@RequestBody DoiMatKhauRequest request) {
-        try {
-            authService.doiMatKhau(request);
-            return ResponseEntity.ok(ApiResponse.ok("Đổi mật khẩu thành công", null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        authService.doiMatKhau(request);
+        return ResponseEntity.ok(ApiResponse.ok("Đổi mật khẩu thành công", null));
     }
 
     @PostMapping("/quen-mat-khau")
     public ResponseEntity<ApiResponse<QuenMatKhauResponse>> quenMatKhau(@RequestBody QuenMatKhauRequest request) {
-        try {
-            QuenMatKhauResponse res = authService.quenMatKhau(request);
-            return ResponseEntity.ok(ApiResponse.ok("Mã OTP đặt lại mật khẩu đã được gửi qua email", res));
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Mã OTP đặt lại mật khẩu đã được gửi qua email", authService.quenMatKhau(request)));
     }
 
     @PostMapping("/dat-lai-mat-khau")
     public ResponseEntity<ApiResponse<Void>> datLaiMatKhau(@RequestBody XacNhanDatLaiMatKhauRequest request) {
-        try {
-            authService.datLaiMatKhau(request);
-            return ResponseEntity.ok(ApiResponse.ok("Đặt lại mật khẩu thành công", null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        authService.datLaiMatKhau(request);
+        return ResponseEntity.ok(ApiResponse.ok("Đặt lại mật khẩu thành công", null));
     }
-
 }

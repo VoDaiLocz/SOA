@@ -29,12 +29,8 @@ public class StorageController {
             @RequestParam(value = "loaiTaiLieu", required = false) String loaiTaiLieu,
             @RequestParam(value = "nguoiUpload", required = false) String nguoiUpload,
             @RequestParam("file") MultipartFile file) {
-        try {
-            TaiLieuDTO dto = storageService.uploadFile(maDeTai, loaiTaiLieu, nguoiUpload, file);
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Upload tài liệu thành công", dto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        TaiLieuDTO dto = storageService.uploadFile(maDeTai, loaiTaiLieu, nguoiUpload, file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Upload tài liệu thành công", dto));
     }
 
     @GetMapping
@@ -55,11 +51,7 @@ public class StorageController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteFile(@PathVariable Long id) {
-        try {
-            storageService.deleteFile(id);
-            return ResponseEntity.ok(ApiResponse.ok("Xóa tài liệu thành công", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
-        }
+        storageService.deleteFile(id);
+        return ResponseEntity.ok(ApiResponse.ok("Xóa tài liệu thành công", null));
     }
 }

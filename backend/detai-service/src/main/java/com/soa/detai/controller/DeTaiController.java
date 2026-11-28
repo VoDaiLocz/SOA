@@ -26,66 +26,39 @@ public class DeTaiController {
 
     @GetMapping("/{maDeTai}")
     public ResponseEntity<ApiResponse<DeTaiDTO>> getDeTaiByMa(@PathVariable String maDeTai) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok(deTaiService.getDeTaiByMa(maDeTai)));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok(deTaiService.getDeTaiByMa(maDeTai)));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<DeTaiDTO>> createDeTai(@RequestBody TaoDeTaiRequest req) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Tạo đề tài thành công", deTaiService.createDeTai(req)));
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Tạo đề tài thành công", deTaiService.createDeTai(req)));
     }
 
     @PutMapping("/{maDeTai}")
     public ResponseEntity<ApiResponse<DeTaiDTO>> updateDeTai(@PathVariable String maDeTai, @RequestBody TaoDeTaiRequest req) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok("Cập nhật đề tài thành công", deTaiService.updateDeTai(maDeTai, req)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Cập nhật đề tài thành công", deTaiService.updateDeTai(maDeTai, req)));
     }
 
     @DeleteMapping("/{maDeTai}")
     public ResponseEntity<ApiResponse<Void>> deleteDeTai(@PathVariable String maDeTai) {
-        try {
-            deTaiService.deleteDeTai(maDeTai);
-            return ResponseEntity.ok(ApiResponse.ok("Xóa đề tài thành công", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(e.getMessage()));
-        }
+        deTaiService.deleteDeTai(maDeTai);
+        return ResponseEntity.ok(ApiResponse.ok("Xóa đề tài thành công", null));
     }
 
     @PostMapping("/{maDeTai}/duyet")
     public ResponseEntity<ApiResponse<DeTaiDTO>> duyetDeTai(@PathVariable String maDeTai) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok("Duyệt đề tài thành công", deTaiService.duyetDeTai(maDeTai)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Duyệt đề tài thành công", deTaiService.duyetDeTai(maDeTai)));
     }
 
     @PostMapping("/{maDeTai}/huy")
     public ResponseEntity<ApiResponse<DeTaiDTO>> huyDeTai(@PathVariable String maDeTai) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok("Hủy đề tài thành công", deTaiService.huyDeTai(maDeTai)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Hủy đề tài thành công", deTaiService.huyDeTai(maDeTai)));
     }
 
     @PostMapping("/{maDeTai}/gia-han")
     public ResponseEntity<ApiResponse<DeTaiDTO>> giaHanDeTai(@PathVariable String maDeTai) {
-        try {
-            return ResponseEntity.ok(ApiResponse.ok("Gia hạn đề tài thành công", deTaiService.giaHanDeTai(maDeTai)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Gia hạn đề tài thành công", deTaiService.giaHanDeTai(maDeTai)));
     }
 
     @PostMapping("/dang-ky")
@@ -94,14 +67,10 @@ public class DeTaiController {
             @RequestHeader(value = "X-Auth-Role", required = false) String authRole,
             @RequestHeader(value = "X-Auth-MaDinhDanh", required = false) String authMaSv) {
         if ("SINH_VIEN".equals(authRole) && authMaSv != null && !authMaSv.isBlank() && !authMaSv.equals(req.getMaSv())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.error("Không được phép đăng ký thay cho sinh viên khác"));
+            throw new SecurityException("Không được phép đăng ký thay cho sinh viên khác");
         }
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Đăng ký giữ chỗ thành công", deTaiService.dangKyDeTai(req)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Đăng ký giữ chỗ thành công", deTaiService.dangKyDeTai(req)));
     }
 
     @DeleteMapping("/dang-ky/{id}")
@@ -109,13 +78,7 @@ public class DeTaiController {
             @PathVariable Long id,
             @RequestHeader(value = "X-Auth-Role", required = false) String authRole,
             @RequestHeader(value = "X-Auth-MaDinhDanh", required = false) String authMaSv) {
-        try {
-            deTaiService.huyDangKy(id, authRole, authMaSv);
-            return ResponseEntity.ok(ApiResponse.ok("Hủy đăng ký thành công", null));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
-        }
+        deTaiService.huyDangKy(id, authRole, authMaSv);
+        return ResponseEntity.ok(ApiResponse.ok("Hủy đăng ký thành công", null));
     }
 }
