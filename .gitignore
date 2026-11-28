@@ -30,3 +30,7 @@ HELP.md
 # Documents
 *.doc
 *.docx
+
+# Environment secrets
+.env
+.env.local

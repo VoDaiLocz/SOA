@@ -52,7 +52,7 @@ public class AuthController {
         try {
             QuenMatKhauResponse res = authService.quenMatKhau(request);
             return ResponseEntity.ok(ApiResponse.ok("Yêu cầu cấp lại mật khẩu đã được xử lý thành công", res));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }

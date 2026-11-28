@@ -15,14 +15,20 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:no-reply@qnu.edu.vn}")
-    private String fromEmail;
+    @Value("${spring.mail.username:}")
+    private String smtpUsername;
 
     public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
-    public boolean sendPasswordResetEmail(String toEmail, String hoTen, String temporaryPassword) {
+    public void sendPasswordResetEmail(String toEmail, String hoTen, String temporaryPassword) {
+        if (mailSender == null || smtpUsername == null || smtpUsername.isBlank()) {
+            throw new IllegalStateException(
+                    "Chưa cấu hình tài khoản SMTP (SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD) để gửi email thật"
+            );
+        }
+
         String subject = "[Đại học Quy Nhơn] Cấp lại mật khẩu tài khoản NCKH";
         String content = String.format(
                 "Kính gửi %s,\n\n" +
@@ -36,28 +42,17 @@ public class EmailService {
                 temporaryPassword
         );
 
-        if (mailSender != null && fromEmail != null && !fromEmail.isBlank() && !fromEmail.contains("no-reply")) {
-            try {
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setFrom(fromEmail);
-                message.setTo(toEmail);
-                message.setSubject(subject);
-                message.setText(content);
-                mailSender.send(message);
-                log.info("Đã gửi email khôi phục mật khẩu thành công tới: {}", toEmail);
-                return true;
-            } catch (Exception e) {
-                log.warn("Không thể gửi email thực qua SMTP server ({}), chuyển sang chế độ mô phỏng email", e.getMessage());
-            }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(smtpUsername);
+            message.setTo(toEmail);
+            message.setSubject(subject);
+            message.setText(content);
+            mailSender.send(message);
+            log.info("Đã gửi email khôi phục mật khẩu thành công tới: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Lỗi gửi email SMTP tới {}: {}", toEmail, e.getMessage());
+            throw new IllegalStateException("Không thể gửi email qua SMTP: " + e.getMessage(), e);
         }
-
-        // Mô phỏng gửi email an toàn cho môi trường phát triển / demo
-        log.info("================================================================================");
-        log.info("[MÔ PHỎNG GỬI EMAIL THÀNH CÔNG]");
-        log.info("Người nhận: {}", toEmail);
-        log.info("Tiêu đề: {}", subject);
-        log.info("Nội dung:\n{}", content);
-        log.info("================================================================================");
-        return true;
     }
 }
